@@ -396,7 +396,7 @@ namespace Hotd3Arcade_Launcher
             Mod_InjectSprMenuExtras();
             Mod_InjectSprLogo();
 
-            //Mod_IntroductionLoop();
+            Mod_IntroductionLoop();
             Mod_TitleScreen();
             Mod_AddLotOfThingsIntoQuickThread();
             Mod_BlockTitleIfNoCredits();
