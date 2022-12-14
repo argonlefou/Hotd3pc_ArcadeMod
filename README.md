@@ -34,7 +34,8 @@ i.e : you can run again the genuine computer game by running the `hod3pc.exe` fi
 
 ## Mod Installation
 
-Simply unzip the release zip somewhere.
+Simply unzip the release zip somewhere.  
+The game will create the needed folders to store game saved data at runtime.
 <br><br>
 
 ## Mod Configuration
