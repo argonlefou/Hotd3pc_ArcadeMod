@@ -19,8 +19,9 @@ The mod is known to be fully compatible with the following version of hod3pc.exe
 | 0228818e9412fc218fcd24bfd829a5a0     | MYTH Release|
 | 733da4e3cfe24b015e5f795811d481e6     | Unknown Release #1|
 | 51dd72f83c0de5b27c0358ad11e2a036     | Unknown Release #2|
-| e4819dcf2105b85a7e7bc9dc66159f5c     | Unknown Release #3|
-<br><br>
+| e4819dcf2105b85a7e7bc9dc66159f5c     | Unknown Release #3|  
+
+<br>
 
 ## Game Installation
 
