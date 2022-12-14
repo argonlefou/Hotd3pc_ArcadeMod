@@ -1,5 +1,10 @@
 # Hotd3pc ArcadeMod
 
+<p align="center">
+  <img align="left" width="400" height="313" src="https://user-images.githubusercontent.com/22789681/207735979-106fecbd-9d7b-4e29-9515-c3bb0b13e8c3.png">
+  <img  width="400" height="313" src="https://user-images.githubusercontent.com/22789681/207736721-320156ed-7fa9-4d8b-ba91-5260be139698.png">
+</p>
+
 This mod is a launcher that will start the windows game and modify the memory in the fly to make it look alike the original arcade version.
 Amongst other things :
 - Credits handling
