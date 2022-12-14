@@ -28,8 +28,10 @@ The mod is known to be fully compatible with the following version of hod3pc.exe
 Just install the game from the CD-ROM / ISO or just unzip the game folder files.
 Installation from the installer is not mandatory, as no registry key is needed anymore.
 
-If you already have the game installed, this mod will run on its own without modifying any existing files.<br>
-i.e : you can run again the genuine computer game by running the `hod3pc.exe` file directly (or the original game launcher).
+**If you already have the game installed, this mod will run on its own without modifying any existing files or registry entry.**<br>
+i.e : you can run again the genuine computer game by running the `hod3pc.exe` file directly (or the original game launcher).  
+<br>
+Optional : you can download a texture pack from the arcade to fix some bad textures on windows [here](https://community.pcgamingwiki.com/files/file/2469-house-of-the-dead-3-texture-fix-pack/)
 <br><br>
 
 ## Mod Installation
