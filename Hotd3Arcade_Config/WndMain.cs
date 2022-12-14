@@ -309,18 +309,18 @@ namespace Hotd3Arcade_Config
             Cbox_Violence.SelectedIndex = 0;
             Cbox_AdvertiseSound.SelectedIndex = 1;
             Cbox_Language.SelectedIndex = 0;
-            Cbox_CreditsToStart.SelectedIndex = 1;
-            Cbox_CreditsToContinue.SelectedIndex = 1;
+            Cbox_CreditsToStart.SelectedIndex = 0;
+            Cbox_CreditsToContinue.SelectedIndex = 0;
             Cbox_Freeplay.SelectedIndex = 0;
 
             Cbox_Aliasing.SelectedIndex = 1;
             Cbox_Colors.SelectedIndex = 0;
             Cbox_Textures.SelectedIndex = 2;
-            Cbox_Resolution.SelectedIndex = 3;
+            Cbox_Resolution.SelectedIndex = 4;
             Cbox_Framerate.SelectedIndex = 0;
-            Cbox_Fullscreen.SelectedIndex = 0;
+            Cbox_Fullscreen.SelectedIndex = 1;
 
-            Cbox_P1Controls.SelectedIndex = 0;
+            Cbox_P1Controls.SelectedIndex = 1;
             Cbox_P2Controls.SelectedIndex = 0;
 
             Chk_MouseCursor.Checked = true;
