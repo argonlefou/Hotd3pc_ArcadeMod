@@ -326,7 +326,6 @@ namespace Hotd3Arcade_Launcher
 
                             CheckExeMd5();
                             ReadGameDataFromMd5Hash();
-                            WriteBytes(0x46C1B8, new byte[] { 0xE9, 0x7B, 0x01, 0x00, 0x00 });
                             Apply_Hacks();
 
                             Logger.WriteLog("RunGame() => Hack complete, leaving the game to run on its own now....");
