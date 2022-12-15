@@ -47,7 +47,7 @@ The game will create the needed folders to store game saved data at runtime.
 
 ## Mod Configuration
 
-* From the previously unzipped folder, run the `Hotd3Arcade_Config.exe` tool.
+* From the previously unzipped folder, run the `Hotd3Arcade_Config.exe` tool. :warning: **You may have to run it as Administrator** :warning:
 * Set the path to your `hod3pc.exe` file.
 * You can also change ARCADE settings, as well as most of the settings available in the genuine game launcher utility.
 * Save once you're done.
@@ -60,6 +60,7 @@ For any advanced needs (multiplayer, lightguns, gamepad, etc....) I highly sugge
 ## Play
 
 Run `Hotd3Arcade_Launcher.exe`.  
+:warning: **You may have to run it as Administrator** :warning:  
 The launcher will start the game and close itself, letting the game run on its own.
 <br><br>
 
