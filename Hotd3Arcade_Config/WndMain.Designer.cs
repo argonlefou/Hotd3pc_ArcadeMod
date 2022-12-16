@@ -76,6 +76,7 @@
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.Chk_MouseCursor = new System.Windows.Forms.CheckBox();
             this.Chk_Crosshair = new System.Windows.Forms.CheckBox();
+            this.Chk_DisablePause = new System.Windows.Forms.CheckBox();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -287,9 +288,9 @@
             // Btn_Save
             // 
             this.Btn_Save.Enabled = false;
-            this.Btn_Save.Location = new System.Drawing.Point(168, 559);
+            this.Btn_Save.Location = new System.Drawing.Point(12, 537);
             this.Btn_Save.Name = "Btn_Save";
-            this.Btn_Save.Size = new System.Drawing.Size(146, 42);
+            this.Btn_Save.Size = new System.Drawing.Size(232, 42);
             this.Btn_Save.TabIndex = 21;
             this.Btn_Save.Text = "Save !";
             this.Btn_Save.UseVisualStyleBackColor = true;
@@ -351,7 +352,7 @@
             this.groupBox3.Controls.Add(this.Cbox_MaxLife);
             this.groupBox3.Location = new System.Drawing.Point(12, 210);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(232, 329);
+            this.groupBox3.Size = new System.Drawing.Size(232, 309);
             this.groupBox3.TabIndex = 41;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Arcade System Menu";
@@ -407,8 +408,8 @@
             this.Cbox_AdvertiseSound.Enabled = false;
             this.Cbox_AdvertiseSound.FormattingEnabled = true;
             this.Cbox_AdvertiseSound.Items.AddRange(new object[] {
-            "ON",
-            "OFF"});
+            "OFF",
+            "ON"});
             this.Cbox_AdvertiseSound.Location = new System.Drawing.Point(114, 168);
             this.Cbox_AdvertiseSound.Name = "Cbox_AdvertiseSound";
             this.Cbox_AdvertiseSound.Size = new System.Drawing.Size(109, 21);
@@ -417,7 +418,7 @@
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(5, 275);
+            this.label18.Location = new System.Drawing.Point(5, 252);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(96, 13);
             this.label18.TabIndex = 3;
@@ -458,7 +459,7 @@
             "7",
             "8",
             "9"});
-            this.Cbox_CreditsToStart.Location = new System.Drawing.Point(114, 245);
+            this.Cbox_CreditsToStart.Location = new System.Drawing.Point(114, 222);
             this.Cbox_CreditsToStart.Name = "Cbox_CreditsToStart";
             this.Cbox_CreditsToStart.Size = new System.Drawing.Size(109, 21);
             this.Cbox_CreditsToStart.TabIndex = 7;
@@ -494,7 +495,7 @@
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(5, 302);
+            this.label21.Location = new System.Drawing.Point(5, 279);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(47, 13);
             this.label21.TabIndex = 5;
@@ -538,7 +539,7 @@
             "7",
             "8",
             "9"});
-            this.Cbox_CreditsToContinue.Location = new System.Drawing.Point(114, 272);
+            this.Cbox_CreditsToContinue.Location = new System.Drawing.Point(114, 249);
             this.Cbox_CreditsToContinue.Name = "Cbox_CreditsToContinue";
             this.Cbox_CreditsToContinue.Size = new System.Drawing.Size(109, 21);
             this.Cbox_CreditsToContinue.TabIndex = 6;
@@ -568,7 +569,7 @@
             this.Cbox_Freeplay.Items.AddRange(new object[] {
             "OFF",
             "ON"});
-            this.Cbox_Freeplay.Location = new System.Drawing.Point(114, 299);
+            this.Cbox_Freeplay.Location = new System.Drawing.Point(114, 276);
             this.Cbox_Freeplay.Name = "Cbox_Freeplay";
             this.Cbox_Freeplay.Size = new System.Drawing.Size(109, 21);
             this.Cbox_Freeplay.TabIndex = 8;
@@ -576,7 +577,7 @@
             // label25
             // 
             this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(5, 248);
+            this.label25.Location = new System.Drawing.Point(5, 225);
             this.label25.Name = "label25";
             this.label25.Size = new System.Drawing.Size(80, 13);
             this.label25.TabIndex = 7;
@@ -618,11 +619,12 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.Chk_DisablePause);
             this.groupBox4.Controls.Add(this.Chk_MouseCursor);
             this.groupBox4.Controls.Add(this.Chk_Crosshair);
             this.groupBox4.Location = new System.Drawing.Point(280, 477);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(187, 62);
+            this.groupBox4.Size = new System.Drawing.Size(187, 102);
             this.groupBox4.TabIndex = 41;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Mod Options";
@@ -632,7 +634,7 @@
             this.Chk_MouseCursor.AutoSize = true;
             this.Chk_MouseCursor.Checked = true;
             this.Chk_MouseCursor.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.Chk_MouseCursor.Location = new System.Drawing.Point(15, 19);
+            this.Chk_MouseCursor.Location = new System.Drawing.Point(15, 28);
             this.Chk_MouseCursor.Name = "Chk_MouseCursor";
             this.Chk_MouseCursor.Size = new System.Drawing.Size(116, 17);
             this.Chk_MouseCursor.TabIndex = 33;
@@ -644,18 +646,30 @@
             this.Chk_Crosshair.AutoSize = true;
             this.Chk_Crosshair.Checked = true;
             this.Chk_Crosshair.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.Chk_Crosshair.Location = new System.Drawing.Point(15, 41);
+            this.Chk_Crosshair.Location = new System.Drawing.Point(15, 51);
             this.Chk_Crosshair.Name = "Chk_Crosshair";
             this.Chk_Crosshair.Size = new System.Drawing.Size(99, 17);
             this.Chk_Crosshair.TabIndex = 32;
             this.Chk_Crosshair.Text = "Hide Crosshairs";
             this.Chk_Crosshair.UseVisualStyleBackColor = true;
             // 
+            // Chk_DisablePause
+            // 
+            this.Chk_DisablePause.AutoSize = true;
+            this.Chk_DisablePause.Checked = true;
+            this.Chk_DisablePause.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.Chk_DisablePause.Location = new System.Drawing.Point(15, 74);
+            this.Chk_DisablePause.Name = "Chk_DisablePause";
+            this.Chk_DisablePause.Size = new System.Drawing.Size(137, 17);
+            this.Chk_DisablePause.TabIndex = 34;
+            this.Chk_DisablePause.Text = "Disable In-Game Pause";
+            this.Chk_DisablePause.UseVisualStyleBackColor = true;
+            // 
             // WndMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(482, 613);
+            this.ClientSize = new System.Drawing.Size(482, 592);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.pictureBox1);
@@ -667,7 +681,7 @@
             this.MaximizeBox = false;
             this.Name = "WndMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "The House of the Dead III - Arcade Configurator v1.0";
+            this.Text = "The House of the Dead III - Arcade Configurator v2.0";
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
@@ -730,6 +744,7 @@
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.CheckBox Chk_Crosshair;
         private System.Windows.Forms.CheckBox Chk_MouseCursor;
+        private System.Windows.Forms.CheckBox Chk_DisablePause;
     }
 }
 

@@ -56,6 +56,7 @@ namespace Hotd3Arcade_Launcher
 
         private const string OPTION_HIDE_CROSSHAIR = "HideCrosshairs";
         private const string OPTION_HIDE_CURSOR = "HideCursor";
+        private const string OPTION_DISABLE_PAUSE = "DisableInGamePause";
 
         #endregion
 
@@ -120,6 +121,7 @@ namespace Hotd3Arcade_Launcher
         //These ones are custom        
         private UInt32 _HideCursor = 1;
         private UInt32 _HideCrosshairs = 1;
+        private UInt32 _DisablePause = 1;
         private UInt32 _CreditsToStart = 1;
         private UInt32 _CreditsToContinue = 1;
         private UInt32 _MaxLife = 5;
@@ -164,6 +166,9 @@ namespace Hotd3Arcade_Launcher
 
         public UInt32 HideCrosshairs
         { get { return _HideCrosshairs; } }
+
+        public UInt32 DisablePause
+        { get { return _DisablePause; } }
 
         public UInt32 CreditsToStart
         { get { return _CreditsToStart; } }
@@ -395,6 +400,10 @@ namespace Hotd3Arcade_Launcher
                                     case OPTION_HIDE_CURSOR:
                                         {
                                             _HideCursor = (byte)i_Value;
+                                        } break;
+                                    case OPTION_DISABLE_PAUSE:
+                                        {
+                                            _DisablePause = (byte)i_Value;
                                         } break;
 
                                     default: break;

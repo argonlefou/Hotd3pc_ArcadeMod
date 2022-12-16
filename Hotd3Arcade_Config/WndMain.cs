@@ -51,6 +51,7 @@ namespace Hotd3Arcade_Config
 
         private const string OPTION_HIDE_CROSSHAIRS = "HideCrosshairs";
         private const string OPTION_HIDE_CURSOR = "HideCursor";
+        private const string OPTION_DISABLE_PAUSE = "DisableInGamePause";
 
         public WndMain()
         {
@@ -209,6 +210,16 @@ namespace Hotd3Arcade_Config
                                                 Chk_MouseCursor.Checked = false;
                                         }
                                     } break;
+                                case OPTION_DISABLE_PAUSE:
+                                    {
+                                        if (int.TryParse(Value, out i_Value))
+                                        {
+                                            if (i_Value == 1)
+                                                Chk_DisablePause.Checked = true;
+                                            else
+                                                Chk_DisablePause.Checked = false;
+                                        }
+                                    } break;
                                 default: break;
                             }
                         }
@@ -284,10 +295,16 @@ namespace Hotd3Arcade_Config
                         sw.WriteLine(OPTION_HIDE_CROSSHAIRS + ":1");
                     else
                         sw.WriteLine(OPTION_HIDE_CROSSHAIRS + ":0");
+
                     if (Chk_MouseCursor.Checked)
                         sw.WriteLine(OPTION_HIDE_CURSOR + ":1");
                     else
                         sw.WriteLine(OPTION_HIDE_CURSOR + ":0");
+
+                    if (Chk_DisablePause.Checked)
+                        sw.WriteLine(OPTION_DISABLE_PAUSE + ":1");
+                    else
+                        sw.WriteLine(OPTION_DISABLE_PAUSE + ":0");
 
                     MessageBox.Show("Config succesfully saved to :\n" + Application.StartupPath + @"\" + CONF_FILENAME, "Hod3 Arcade Configurator", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -325,6 +342,7 @@ namespace Hotd3Arcade_Config
 
             Chk_MouseCursor.Checked = true;
             Chk_Crosshair.Checked = true;
+            Chk_DisablePause.Checked = true;
         }
 
         private void Btn_Browse_Click(object sender, EventArgs e)

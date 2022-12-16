@@ -67,6 +67,8 @@ namespace Hotd3Arcade_Launcher
         private UInt32 _FltConstant_58f_Offset = 0x0001C28C4;
         private UInt32 _FltConstant_10f_Offset = 0x0001C2718;
         private UInt32 _FltConstant_46f_Offset = 0x0001C2938;
+        private UInt32 _AllowStartGame = 0x00366748;
+        private UInt32 _StartGameFromByteJmpTable_Offset = 0x0008E134;
 
         // Base Address of Loaded sprites ID
         private UInt32 _SprMenuExtraSprites_Offset = 0x199C94;
@@ -174,6 +176,12 @@ namespace Hotd3Arcade_Launcher
         private UInt32 _OverrideSprMenuExtrasSize_Offset = 0x00077737;
         private UInt32 _OverrideSprLogoSize_Offset = 0x00075F3F;
         private UInt32 _FastReload_Offset = 0x00204DCC;
+        private UInt32 _DisableInGamePause_v1_Offset = 0x008B5A0; 
+        private UInt32 _DisableInGamePause_v2_Offset = 0x008C2B3;
+        private UInt32 _StartGameFromTitle_Offset1 = 0x0003E4F2;
+        private UInt32 _StartGameFromTitle_Offset2 = 0x0008D9A4;
+        private UInt32 _StartGameFromTitleSwitchCase_Offset = 0x0008E01E;
+
         private NopStruct _Nop_RegQuerryValueExA1 = new NopStruct(0x000B25BA, 6);
         private NopStruct _Nop_RegQuerryValueExA2 = new NopStruct(0x000B25EC, 6);
         private NopStruct _Nop_MenuScreen_Background = new NopStruct(0x00077B3F, 5);
@@ -220,6 +228,7 @@ namespace Hotd3Arcade_Launcher
         private InjectionStruct _ReplaceCreditsDigit1SpriteInGame_Injection = new InjectionStruct(0x0003E2C3, 5);
         private InjectionStruct _ReplaceCreditsDigit2SpriteInGame_Injection = new InjectionStruct(0x0003E30B, 5);
         private InjectionStruct _ReplacePressStartButtonSpriteInGame_Injection = new InjectionStruct(0x0003E1CC, 5);
+        private InjectionStruct _StartGameFromTitle_Injection = new InjectionStruct(0x0008DFED, 7);
 
 
         //MD5 check of target binaries, may help to know if it's the wrong version or not compatible
@@ -381,8 +390,10 @@ namespace Hotd3Arcade_Launcher
 
             //
             Mod_RegistryChecks();
+
             if (_GameConfigurator.HideCursor == 1)
                 Mod_HideCursor();
+
             Mod_OverrideLoadingHod3DatFile();
             Mod_OverrideDefaultHod3DatFile(_OverideDefaultHod3Dat_Injection1);
             Mod_OverrideDefaultHod3DatFile(_OverideDefaultHod3Dat_Injection2);
@@ -394,15 +405,20 @@ namespace Hotd3Arcade_Launcher
             Mod_CreditsHandling();
             Mod_InjectSprMenuExtras();
             Mod_InjectSprLogo();
+            Mod_AddLotOfThingsIntoQuickThread();
 
             Mod_IntroductionLoop();
             Mod_TitleScreen();
-            Mod_AddLotOfThingsIntoQuickThread();
-            Mod_BlockTitleIfNoCredits();
+           
+            //Mod_BlockTitleIfNoCredits();
+            Mod_StartGameFromTitleScreen(); //Replace the old hack from above, cleaner way.
             Mod_DisableTimeAttackAttractMode();
 
-            Mod_RemoveMenu_Screen();    //
-            Mod_ReturnToMenu();         //Needs the one above, if not: crash the game
+            //Mod_RemoveMenu_Screen();    //Not Needed if we use Mod_StartGameFromTitleScreen(); 
+            Mod_ReturnToMenu();
+
+            if (_GameConfigurator.DisablePause == 1)
+                Mod_DisableInGamePause_v2();
 
             Mod_SetMaxLife();
             Mod_FastReload();
@@ -1577,19 +1593,17 @@ namespace Hotd3Arcade_Launcher
         //Disable Start P1 and Start P2 if no credits at the title screen
         //Also check for FREEPLAY to enable
         private void Mod_BlockTitleIfNoCredits()
-        {
+        {/*
             Codecave CaveMemory = new Codecave(_Process, _Process.MainModule.BaseAddress);
             CaveMemory.Open();
             CaveMemory.Alloc(0x800);
             List<byte> Buffer;
             //je exit
-            CaveMemory.Write_StrBytes("74 25");
             //Button Pushed:
+            CaveMemory.Write_StrBytes("74 25");
             //cmp [SceneID], 5
             CaveMemory.Write_StrBytes("83 3D");
-            Buffer = new List<byte>();
-            Buffer.AddRange(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _CurrentSceneID_Offset));
-            CaveMemory.Write_Bytes(Buffer.ToArray());
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _CurrentSceneID_Offset));
             CaveMemory.Write_StrBytes("05");
             //jne ok
             CaveMemory.Write_StrBytes("75 19");
@@ -1633,7 +1647,109 @@ namespace Hotd3Arcade_Launcher
             Buffer.Add(0xE9);
             Buffer.AddRange(BitConverter.GetBytes(jumpTo));
             Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _BlockTitleStartIfNoCredits_Injection.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);
+        */
+
+            _BlockTitleStartIfNoCredits_Injection = new InjectionStruct(0x8E000, 5);
+            NopStruct n = new NopStruct(0x8E015, 7);
+            SetNops((UInt32)_Process_MemoryBaseAddress, n);
+
+            Codecave CaveMemory = new Codecave(_Process, _Process.MainModule.BaseAddress);
+            CaveMemory.Open();
+            CaveMemory.Alloc(0x800);
+            List<byte> Buffer;
+            //cmp [SceneID], 5
+            CaveMemory.Write_StrBytes("83 3D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _CurrentSceneID_Offset));
+            CaveMemory.Write_StrBytes("05");
+            //jne ok
+            CaveMemory.Write_StrBytes("75 1B");
+            //cmp [Frepplay], 1
+            CaveMemory.Write_StrBytes("83 3D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _FlagFreeplay_Offset));
+            CaveMemory.Write_StrBytes("01");
+            //je ok
+            CaveMemory.Write_StrBytes("74 12");
+            //push ebx
+            CaveMemory.Write_StrBytes("53");
+            //xor ebx, ebx
+            CaveMemory.Write_StrBytes("31 DB");
+            //mov bl, [CreditsToStart]
+            CaveMemory.Write_StrBytes("8A 1D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _CreditsToStart_Offset));
+            //cmp [Credits],ebx
+            CaveMemory.Write_StrBytes("39 1D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _Credits_Offset));
+            //pop ebx
+            CaveMemory.Write_StrBytes("5B");
+            //jge exit
+            CaveMemory.Write_StrBytes("7C 0C");
+            //ok:
+            //call 432C10
+            CaveMemory.Write_call(0x432C10);
+            //mov 7B8964, esi
+            CaveMemory.Write_StrBytes("66 89 35 64 89 7B 00");
+            //exit:
+            //jmp return
+            CaveMemory.Write_jmp((UInt32)_Process_MemoryBaseAddress + _BlockTitleStartIfNoCredits_Injection.Injection_ReturnOffset);
+
+            Logger.WriteLog("Mod_BlockTitleIfNoCredits() => Adding Codecave at : 0x" + CaveMemory.CaveAddress.ToString("X8"));
+
+            //Code injection
+            IntPtr ProcessHandle = _Process.Handle;
+            UInt32 bytesWritten = 0;
+            UInt32 jumpTo = 0;
+            jumpTo = CaveMemory.CaveAddress - ((UInt32)_Process_MemoryBaseAddress + _BlockTitleStartIfNoCredits_Injection.Injection_Offset) - 5;
+            Buffer = new List<byte>();
+            Buffer.Add(0xE9);
+            Buffer.AddRange(BitConverter.GetBytes(jumpTo));
+            Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _BlockTitleStartIfNoCredits_Injection.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);
+       
+        
         }
+
+        // Add the Title SCENE_ID in allowed ID to start a game, instead of the MENU_ID
+        private void Mod_StartGameFromTitleScreen()
+        {
+            //Enable the code to run when in Title screen instead of Menu screen
+            WriteByte((UInt32)_Process_MemoryBaseAddress +  _StartGameFromTitle_Offset1, 0x05);
+            WriteByte((UInt32)_Process_MemoryBaseAddress +  _StartGameFromTitle_Offset2, 0x05);            
+
+            //Adding possibility to go into the good prrocedure, when SCENE_ID is Title, in a switch loop
+            Codecave CaveMemory = new Codecave(_Process, _Process.MainModule.BaseAddress);
+            CaveMemory.Open();
+            CaveMemory.Alloc(0x800);
+            List<byte> Buffer;
+            //cmp edi,05
+            CaveMemory.Write_StrBytes("83 FF 05");
+            //jne 00B10018
+            CaveMemory.Write_StrBytes("75 0F");
+            //mov [hod3pc.exe+366748],00000001
+            CaveMemory.Write_StrBytes("C7 05");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _AllowStartGame));
+            CaveMemory.Write_StrBytes("01 00 00 00");
+            //jmp Case"5"
+            CaveMemory.Write_jmp((UInt32)_Process_MemoryBaseAddress + _StartGameFromTitleSwitchCase_Offset);            
+            //movzx eax,byte ptr [eax+hod3pc.exe+8E134]
+            CaveMemory.Write_StrBytes("0F B6 80");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _StartGameFromByteJmpTable_Offset));
+            //jmp return
+            CaveMemory.Write_jmp((UInt32)_Process_MemoryBaseAddress + _StartGameFromTitle_Injection.Injection_ReturnOffset);
+
+            Logger.WriteLog("Mod_BlockTitleIfNoCredits() => Adding Codecave at : 0x" + CaveMemory.CaveAddress.ToString("X8"));
+
+            //Code injection
+            IntPtr ProcessHandle = _Process.Handle;
+            UInt32 bytesWritten = 0;
+            UInt32 jumpTo = 0;
+            jumpTo = CaveMemory.CaveAddress - ((UInt32)_Process_MemoryBaseAddress + _StartGameFromTitle_Injection.Injection_Offset) - 5;
+            Buffer = new List<byte>();
+            Buffer.Add(0xE9);
+            Buffer.AddRange(BitConverter.GetBytes(jumpTo));
+            Buffer.Add(0x90);
+            Buffer.Add(0x90);
+            Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _StartGameFromTitle_Injection.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten); 
+        }
+
 
         //Remove mouse Cursor Everywhere
         private void Mod_HideCursor()
@@ -1778,6 +1894,18 @@ namespace Hotd3Arcade_Launcher
             Buffer.Add(0x90);
             Buffer.Add(0x90);
             Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _InitLifeLimitToMax_Injection.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);
+        }
+
+        //Disable the Pause menu when hitting Start in-game
+        private void Mod_DisableInGamePause_v1()
+        {
+            //Solution 1 : force jmp if pause is detected
+            WriteByte((UInt32)_Process_MemoryBaseAddress + _DisableInGamePause_v1_Offset, 0xEB);
+        }
+        private void Mod_DisableInGamePause_v2()
+        {
+            //Other possibility : xor eax, eax @48C2B3 
+            WriteBytes((UInt32)_Process_MemoryBaseAddress + _DisableInGamePause_v2_Offset, new byte[] { 0x31, 0xC0, 0x90, 0x90 });
         }
 
          //Hide gun display during gameplay, like arcade version of the game
