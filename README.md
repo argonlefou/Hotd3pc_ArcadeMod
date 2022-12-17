@@ -93,4 +93,5 @@ Common controls :
 | <kbd>RCTRL</kbd>|P2 Trigger|
 | <kbd>RSHIFT</kbd>|P2 Reload|
 
-Keyboard keys and gamepad buttons can be manually changed in the launcher config file `Hod3Arcade.ini`.  
+Keyboard keys and can be manually changed in the launcher config file `Hod3Arcade.ini`.  
+For GamePad use, it's highly advised to use [DemulShooter](https://github.com/argonlefou/DemulShooter/wiki)
