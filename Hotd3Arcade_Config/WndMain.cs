@@ -49,6 +49,15 @@ namespace Hotd3Arcade_Config
         private const string OPTION_KEYBOARD2P_SHOOT = "Keyboard2pShoot";
         private const string OPTION_KEYBOARD2P_RELOAD = "Keyboard2pReload";
 
+        private const string OPTION_GAMEPAD1P_SHOOT = "Gamepad1pShoot";
+        private const string OPTION_GAMEPAD1P_RELOAD = "Gamepad1pReload";
+        private const string OPTION_GAMEPAD1P_CENTER = "Gamepad1pCenter";
+        private const string OPTION_GAMEPAD1P_START = "Gamepad1pStart";
+        private const string OPTION_GAMEPAD2P_SHOOT = "Gamepad2pShoot";
+        private const string OPTION_GAMEPAD2P_RELOAD = "Gamepad2pReload";
+        private const string OPTION_GAMEPAD2P_CENTER = "Gamepad2pCenter";
+        private const string OPTION_GAMEPAD2P_START = "Gamepad2pStart";
+
         private const string OPTION_HIDE_CROSSHAIRS = "HideCrosshairs";
         private const string OPTION_HIDE_CURSOR = "HideCursor";
         private const string OPTION_DISABLE_PAUSE = "DisableInGamePause";
@@ -290,6 +299,16 @@ namespace Hotd3Arcade_Config
                     sw.WriteLine(OPTION_KEYBOARD2P_SHOOT + ":157");
                     sw.WriteLine(OPTION_KEYBOARD2P_RELOAD + ":54");
 
+                    sw.WriteLine("[Gamepad Controls]");
+                    sw.WriteLine(OPTION_GAMEPAD1P_SHOOT + ":0");
+                    sw.WriteLine(OPTION_GAMEPAD1P_RELOAD + ":1");
+                    sw.WriteLine(OPTION_GAMEPAD1P_CENTER + ":3");
+                    sw.WriteLine(OPTION_GAMEPAD1P_START + ":2");
+                    sw.WriteLine(OPTION_GAMEPAD2P_SHOOT + ":0");
+                    sw.WriteLine(OPTION_GAMEPAD2P_RELOAD + ":1");
+                    sw.WriteLine(OPTION_GAMEPAD2P_CENTER + ":3");
+                    sw.WriteLine(OPTION_GAMEPAD2P_START + ":2");
+                    
                     sw.WriteLine("[Mod Options]");
                     if (Chk_Crosshair.Checked)
                         sw.WriteLine(OPTION_HIDE_CROSSHAIRS + ":1");

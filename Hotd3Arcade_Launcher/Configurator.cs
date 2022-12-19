@@ -52,6 +52,14 @@ namespace Hotd3Arcade_Launcher
         private const string OPTION_KEYBOARD2P_START = "Keyboard2pStart";
         private const string OPTION_KEYBOARD2P_SHOOT = "Keyboard2pShoot";
         private const string OPTION_KEYBOARD2P_RELOAD = "Keyboard2pReload";
+        private const string OPTION_GAMEPAD1P_SHOOT = "Gamepad1pShoot";
+        private const string OPTION_GAMEPAD1P_RELOAD = "Gamepad1pReload";
+        private const string OPTION_GAMEPAD1P_CENTER = "Gamepad1pCenter";
+        private const string OPTION_GAMEPAD1P_START = "Gamepad1pStart";
+        private const string OPTION_GAMEPAD2P_SHOOT = "Gamepad2pShoot";
+        private const string OPTION_GAMEPAD2P_RELOAD = "Gamepad2pReload";
+        private const string OPTION_GAMEPAD2P_CENTER = "Gamepad2pCenter";
+        private const string OPTION_GAMEPAD2P_START = "Gamepad2pStart";
         private const string OPTION_LANGUAGE = "Language";
 
         private const string OPTION_HIDE_CROSSHAIR = "HideCrosshairs";
@@ -87,12 +95,12 @@ namespace Hotd3Arcade_Launcher
             0x15,   //KeyBoard2pCenter
             0x00,   //GamePad1p1
             0x00,   //GamePad2p1
-            0x00,   //GamePad1p2
-            0x00,   //GamePad2p2
-            0x00,   //GamePad1p3
-            0x00,   //GamePad2p3
-            0x00,   //GamePad1p4
-            0x00,   //GamePad2p4
+            0x01,   //GamePad1p2
+            0x01,   //GamePad2p2
+            0x02,   //GamePad1p3
+            0x02,   //GamePad2p3
+            0x03,   //GamePad1p4
+            0x03,   //GamePad2p4
             0x00,   //GamePad1Vb
             0x00,   //GamePad2Vb
             //+0x0C offset
@@ -305,6 +313,39 @@ namespace Hotd3Arcade_Launcher
                                         } break;
 
                                     //Gamepad
+                                    case OPTION_GAMEPAD1P_SHOOT:
+                                        {
+                                            SetOptionInArray(i_Value, 20);
+                                        } break;
+                                    case OPTION_GAMEPAD2P_SHOOT:
+                                        {
+                                            SetOptionInArray(i_Value, 21);
+                                        } break;
+                                    case OPTION_GAMEPAD1P_RELOAD:
+                                        {
+                                            SetOptionInArray(i_Value, 22);
+                                        } break;
+                                    case OPTION_GAMEPAD2P_RELOAD:
+                                        {
+                                            SetOptionInArray(i_Value, 23);
+                                        } break;
+                                    case OPTION_GAMEPAD1P_START:
+                                        {
+                                            SetOptionInArray(i_Value, 24);
+                                        } break;
+                                    case OPTION_GAMEPAD2P_START:
+                                        {
+                                            SetOptionInArray(i_Value, 25);
+                                        } break;
+                                    case OPTION_GAMEPAD1P_CENTER:
+                                        {
+                                            SetOptionInArray(i_Value, 26);
+                                        } break;
+                                    case OPTION_GAMEPAD2P_CENTER:
+                                        {
+                                            SetOptionInArray(i_Value, 27);
+                                        } break;                                    
+
 
                                     case OPTION_RESOLUTION:
                                         {

@@ -16,8 +16,7 @@ namespace Hotd3Arcade_Launcher
         private const string HOD3_CUSTOM_LOCAL_FOLDER = @"NVRAM\";
         private const string HOD3_DAT_FILENAME = "HOD3.DAT";
         private const string HOD3_SAVE_FILENAME = "SAVE.DAT";
-        private const string MEMORY_DATA_FOLDER = "MemoryData";
-        
+        private const string MEMORY_DATA_FOLDER = "MemoryData";        
 
         private int _ProcessId = 0;
         private Process _Process;
@@ -36,12 +35,21 @@ namespace Hotd3Arcade_Launcher
             CustomSpriteVisibility = 12,
             SkipIntro = 16,
             ShowIntro = 20,
+            ShowReloadP1 = 24,
+            ShowReloadP2 = 28,
             CustomDatFilePath = 50, //char[255]
             CustomSaveFilePath = 305, //char[255]
-            CoinSoundFileName = 560, // char[255]
-            GameBaseDirectory = 800 //char[255]
+            CoinSoundFileName = 560,
+            GameBaseDirectory = 815// char[255]
         }
 
+        //Audio table for /fs/media sound is located at @5E56A8 :
+        //4 Bytes => audi ID to use when calling the function 4A3D80
+        //4 Bytes => memory address corresponding to the file path to load
+        private UInt32 _SfxID_Reload = 0x0210FA9;
+        //Coin sound is not in the table, that's why we will use the start SFX entry (not used anymore, at the title screen)
+        private UInt32 _SfxID_ToUseForCoin = 0x10BA9;   //start02.aif
+        
         //Custom functions that will need to be addresses by Assembly codecaves to be called
         private UInt32 _CustomDrawSprite1_Function_Address = 0;
         private UInt32 _CustomDrawSprite2_Function_Address = 0;
@@ -58,8 +66,12 @@ namespace Hotd3Arcade_Launcher
         private UInt32 _ContinueTimer_Offset = 0x003B8924;
         private UInt32 _CurrentSceneID_Offset = 0x003B8B74;
         private UInt32 _NextSceneID_Offset = 0x003B8780;
-        private UInt32 _Player1GameStatus = 0x003B8038; //Player2GameStatus = 0x003B8264;
+        private UInt32 _Player1GameStatus_Offset = 0x003B8038;
+        private UInt32 _Player2GameStatus_Offset = 0x003B8264;
+        private UInt32 _Player1Ammo_Offset = 0x003B8090;
+        private UInt32 _Player2Ammo_Offset = 0x003B82BC;
         private UInt32 _DrawFs2SpritesFunction_Offset = 0x000A5EE0;
+        private UInt32 _DrawFsSpritesFunction_Offset = 0x000A5EA0;
         private UInt32 _GetLocalTimeFunction_Offset = 0x0003D710;   //Caled in HOD3.DAT default values
         private UInt32 _CurrentPath_Offset = 0x0059C5F4;
         private UInt32 _SoundPlayerHandle_Offset = 0x005D2E18;
@@ -71,13 +83,13 @@ namespace Hotd3Arcade_Launcher
         private UInt32 _StartGameFromByteJmpTable_Offset = 0x0008E134;
 
         // Base Address of Loaded sprites ID
-        private UInt32 _SprMenuExtraSprites_Offset = 0x199C94;
+        private UInt32 _SprMenuExtraSprites_Offset = 0x199C58;
         //Used in Menu :
         //+599C58	:	EXIT (English)
-        //+599C64	:	EXIT (german)
+        //+599C64	:	EXIT (german)                   Attract "reload"             
         //+599C70	:	EXIT (french)
         //+599C7C	:	EXIT (spanish)
-        //+599C88	:	EXIT (italian)
+        //+599C88	:	EXIT (italian)                  Attract "Shells"
         //+599D60	:	Sega trademark
 
         //Used in Options :
@@ -124,14 +136,16 @@ namespace Hotd3Arcade_Launcher
         //+599E2C	:	END (italian)
         private enum SprMenuExtraSprite
         {
-            Credits = 0x3C,
-            Freeplay = 0x54,
-            PressStart = 0x84,
-            InsertCoin = 0x9C,
-            Num0 = 0xD8,
+            AttractReload = 0x0C,
+            AttractShells = 0x30,
+            Credits = 0x78,
+            Freeplay = 0x90,
+            PressStart = 0xC0,
+            InsertCoin = 0xD8,
+            Num0 = 0x114,
             //+0x0C for eaxh number untill 9            
-            Logo = 0x15C,
-            Trademark = 0x150
+            Logo = 0x198,
+            Trademark = 0x18C
         }
         //For our custom INSERT COINS / PRESS START sprites, fixed values (screen is 640x480)
         //Origin : center of the sprite (so that different lenght/language are still centered)
@@ -198,8 +212,7 @@ namespace Hotd3Arcade_Launcher
         private NopStruct _Nop_CreditsInit_4 = new NopStruct(0x0003E600, 7);
         private NopStruct _Nop_CreditsToStartAndContinueInit = new NopStruct(0x0003E0E3, 10);    //CreditsToStart & CreditsToContinue
         private NopStruct _Nop_SfxPlayStart = new NopStruct(0x0008E005, 16);
-        private NopStruct _Nop_NoAutoReload_1 = new NopStruct(0x0008DEDB, 3);
-        private NopStruct _Nop_NoAutoReload_2 = new NopStruct(0x0008DF1E, 3);
+        private NopStruct _Nop_NoAutoReload_1 = new NopStruct(0x0008DEDB, 3);        
         private NopStruct _Nop_Arcade_Mode_Display = new NopStruct(0x0008FD29, 2);    
         private NopStruct _Nop_ConfirmExitGame = new NopStruct(0x000B2AB2, 12);
 
@@ -229,6 +242,9 @@ namespace Hotd3Arcade_Launcher
         private InjectionStruct _ReplaceCreditsDigit2SpriteInGame_Injection = new InjectionStruct(0x0003E30B, 5);
         private InjectionStruct _ReplacePressStartButtonSpriteInGame_Injection = new InjectionStruct(0x0003E1CC, 5);
         private InjectionStruct _StartGameFromTitle_Injection = new InjectionStruct(0x0008DFED, 7);
+        private InjectionStruct _AddReloadSfx_Injection1 = new InjectionStruct(0x0008DF1E, 5);
+        private InjectionStruct _AddReloadSfx_Injection2 = new InjectionStruct(0x0008DED4, 7);
+        private InjectionStruct _ReplaceAttractModeSprites_Injection = new InjectionStruct(0x000A960A, 5);
 
 
         //MD5 check of target binaries, may help to know if it's the wrong version or not compatible
@@ -409,6 +425,7 @@ namespace Hotd3Arcade_Launcher
 
             Mod_IntroductionLoop();
             Mod_TitleScreen();
+            Mod_ReplaceAttractModeSprites();
            
             //Mod_BlockTitleIfNoCredits();
             Mod_StartGameFromTitleScreen(); //Replace the old hack from above, cleaner way.
@@ -424,6 +441,7 @@ namespace Hotd3Arcade_Launcher
             Mod_FastReload();
             Mod_HideGuns();
             Mod_NoAutoReload();
+            Mod_AddReloadEffects();
             Mod_ReplaceFreeplaySpriteInGame();
             Mod_ReplaceCreditsSpriteInGame();
             Mod_ReplaceCreditsDigit1SpriteInGame();
@@ -441,7 +459,7 @@ namespace Hotd3Arcade_Launcher
         {
             Codecave CaveMemory = new Codecave(_Process, _Process.MainModule.BaseAddress);
             CaveMemory.Open();
-            CaveMemory.Alloc(0x800);
+            CaveMemory.Alloc(0x1500);
             _DataBank_Address = CaveMemory.CaveAddress;
 
             Logger.WriteLog("Create_DataBank() => Adding DataBank codecave at : 0x" + CaveMemory.CaveAddress.ToString("X8"));
@@ -460,8 +478,7 @@ namespace Hotd3Arcade_Launcher
             WriteBytes(_DataBank_Address + (uint)DataBank_Offset.CustomSaveFilePath, ASCIIEncoding.ASCII.GetBytes(Hod3SavePath));
 
             String CoinSoundFileName = @"..\media\coin002.aif";
-            WriteBytes(_DataBank_Address + (uint)DataBank_Offset.CoinSoundFileName, Encoding.ASCII.GetBytes(CoinSoundFileName));
-            
+            WriteBytes(_DataBank_Address + (uint)DataBank_Offset.CoinSoundFileName, Encoding.ASCII.GetBytes(CoinSoundFileName));           
         }
                  
         // Remove all registry functions : no writing nor reading
@@ -861,7 +878,6 @@ namespace Hotd3Arcade_Launcher
 
         //Change the sound effect file played when using the Credits button
         //The game does dot allow to play all sounf files on disk, so we choose to play the start sound effect ID
-        //And with a flag we will change the filename to the coin sound Id only when needed
         private void Mod_ForceCoinSoundEffect()
         {
             Codecave CaveMemory = new Codecave(_Process, _Process.MainModule.BaseAddress);
@@ -871,28 +887,14 @@ namespace Hotd3Arcade_Launcher
             Buffer = new List<byte>();
             //push C8
             CaveMemory.Write_StrBytes("68 C8 00 00 00");
-            //cmp ebp,00010BA9
-            CaveMemory.Write_StrBytes("81 FD A9 0B 01 00");
-            //jne Exit
+            //cmp ebp, _SfxID_ToUseForCoin
+            CaveMemory.Write_StrBytes("81 FD");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(_SfxID_ToUseForCoin));
+            //jne NextCheck
             CaveMemory.Write_StrBytes("75 05");
-            //cmp DataBank.RequestCoinSound,01
-            //CaveMemory.Write_StrBytes("83 3D");
-            //Buffer.AddRange(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.RequestCoinSound));
-            //CaveMemory.Write_Bytes(Buffer.ToArray());
-            //CaveMemory.Write_StrBytes("01");
-            //jne Exit
-            //CaveMemory.Write_StrBytes("75 0D");
             //mov ebx, DataBank.CoinSoundFile
             CaveMemory.Write_StrBytes("BB");
-            Buffer.Clear();
-            Buffer.AddRange(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.CoinSoundFileName));
-            CaveMemory.Write_Bytes(Buffer.ToArray());
-            //mov DataBank.RequestCoinSound,00
-            //CaveMemory.Write_StrBytes("C7 05");
-            //Buffer.Clear();
-            //Buffer.AddRange(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.RequestCoinSound));
-            //CaveMemory.Write_Bytes(Buffer.ToArray());
-            //CaveMemory.Write_StrBytes("00 00 00 00");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.CoinSoundFileName));
             //jmp return
             CaveMemory.Write_jmp((UInt32)_Process_MemoryBaseAddress + _ForceCoinSoundEffect_Injection.Injection_ReturnOffset);
 
@@ -1317,6 +1319,110 @@ namespace Hotd3Arcade_Launcher
             CaveMemory.Open();
             CaveMemory.Alloc(0x800);
             List<byte> Buffer;
+             //First : save registers...lots of functions will be called, and modify them
+            //push ebx
+            CaveMemory.Write_StrBytes("53");
+            //push edx
+            CaveMemory.Write_StrBytes("52");
+
+            //First : Reset display RELOAD srpites if reloaded
+            //cmp dword ptr [P1_Ammo], 00
+            CaveMemory.Write_StrBytes("83 3D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _Player1Ammo_Offset));
+            CaveMemory.Write_StrBytes("00");
+            //jle CheckP2
+            CaveMemory.Write_StrBytes("7E 0A");
+            //mov [DataBank.DisplayP1Reload], 0
+            CaveMemory.Write_StrBytes("C7 05");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.ShowReloadP1));
+            CaveMemory.Write_StrBytes("00 00 00 00");
+            //cmp dword ptr [P2_Ammo], 00
+            CaveMemory.Write_StrBytes("83 3D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _Player2Ammo_Offset));
+            CaveMemory.Write_StrBytes("00");
+            //jle Next
+            CaveMemory.Write_StrBytes("7E 0A");
+            //mov [DataBank.DisplayP2Reload], 0
+            CaveMemory.Write_StrBytes("C7 05");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.ShowReloadP2));
+            CaveMemory.Write_StrBytes("00 00 00 00");
+
+            //Second : Check to display RELOAD srpites
+            //cmp dword ptr [DataBank_Offset.ShowReloadP1], 00
+            CaveMemory.Write_StrBytes("83 3D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.ShowReloadP1));
+            CaveMemory.Write_StrBytes("00");
+            //jne CheckP2
+            CaveMemory.Write_StrBytes("74 38");
+            //cmp dword ptr [P1_GameStatus], 05
+            CaveMemory.Write_StrBytes("83 3D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _Player1GameStatus_Offset));
+            CaveMemory.Write_StrBytes("05");
+            //jne CheckP2
+            CaveMemory.Write_StrBytes("75 2F");
+            //push 3F800000
+            CaveMemory.Write_StrBytes("68 00 00 80 3F");
+            //push 0x05
+            CaveMemory.Write_StrBytes("6A 05");
+            //push 0x00
+            CaveMemory.Write_StrBytes("6A 00");
+            //push 3F800000
+            CaveMemory.Write_StrBytes("68 00 00 80 3F");
+            //push 3F800000
+            CaveMemory.Write_StrBytes("68 00 00 80 3F");
+            //push 38D1B717
+            CaveMemory.Write_StrBytes("68 17 B7 D1 38");
+            //push Y
+            CaveMemory.Write_StrBytes("68");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(240.0f));
+            //push X
+            CaveMemory.Write_StrBytes("68");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(70.0f));
+            //push 0x90 (Reload sprite ID)
+            CaveMemory.Write_StrBytes("68 90 00 00 00");
+            //Call draw
+            CaveMemory.Write_call((UInt32)_Process_MemoryBaseAddress + _DrawFsSpritesFunction_Offset);
+            //add esp, 24
+            CaveMemory.Write_StrBytes("83 C4 24");
+            //CheckP2
+            //cmp dword ptr [DataBank_Offset.ShowReloadP2],01
+            CaveMemory.Write_StrBytes("83 3D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.ShowReloadP2));
+            CaveMemory.Write_StrBytes("00");
+            //je Next
+            CaveMemory.Write_StrBytes("74 38");
+            //cmp dword ptr [P2_GameStatus], 05
+            CaveMemory.Write_StrBytes("83 3D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _Player2GameStatus_Offset));
+            CaveMemory.Write_StrBytes("05");
+            //jne CheckP2
+            CaveMemory.Write_StrBytes("75 2F");
+            //push 3F800000
+            CaveMemory.Write_StrBytes("68 00 00 80 3F");
+            //push 0x07
+            CaveMemory.Write_StrBytes("6A 07");
+            //push 0x00
+            CaveMemory.Write_StrBytes("6A 00");
+            //push 3F800000
+            CaveMemory.Write_StrBytes("68 00 00 80 3F");
+            //push 3F800000
+            CaveMemory.Write_StrBytes("68 00 00 80 3F");
+            //push 38D1B717
+            CaveMemory.Write_StrBytes("68 17 B7 D1 38");
+            //push Y
+            CaveMemory.Write_StrBytes("68");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(240.0f));
+            //push X
+            CaveMemory.Write_StrBytes("68");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(570.0f));
+            //push 0x90 (Reload sprite ID)
+            CaveMemory.Write_StrBytes("68 90 00 00 00");
+            //Call draw
+            CaveMemory.Write_call((UInt32)_Process_MemoryBaseAddress + _DrawFsSpritesFunction_Offset);
+            //add esp, 24
+            CaveMemory.Write_StrBytes("83 C4 24");
+
+            //Second Step : 
             //cmp dword ptr [Scene_ID],04
             CaveMemory.Write_StrBytes("83 3D");
             Buffer = new List<byte>();
@@ -1481,6 +1587,12 @@ namespace Hotd3Arcade_Launcher
             //Call CustomDrawSpriteFunction_1
             //add esp, 10
             CaveMemory.Write_StrBytes("83 C4 10");
+
+            //Resore registers before returning
+            //pop edx
+            CaveMemory.Write_StrBytes("5A");
+            //pop ebx
+            CaveMemory.Write_StrBytes("5B");
             //mov eax, [esp+14]
             CaveMemory.Write_StrBytes("8B 44 24 14");
             //mov ecx, [eax]
@@ -1498,6 +1610,7 @@ namespace Hotd3Arcade_Launcher
             Buffer = new List<byte>();
             Buffer.Add(0xE9);
             Buffer.AddRange(BitConverter.GetBytes(jumpTo));
+            Buffer.Add(0x90);
             Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _LoopThreadVariousThings_Injection.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);
         }
         
@@ -1566,6 +1679,141 @@ namespace Hotd3Arcade_Launcher
             Buffer.Add(0xE9);
             Buffer.AddRange(BitConverter.GetBytes(jumpTo));
             Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _ChangeTitleLogo_Injection.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);            
+        }
+
+        //Replaceing instructions sprites with arcade ones (no more autoreload, etc...)
+        private void Mod_ReplaceAttractModeSprites()
+        {
+            Codecave CaveMemory = new Codecave(_Process, _Process.MainModule.BaseAddress);
+            CaveMemory.Open();
+            CaveMemory.Alloc(0x800);
+            List<byte> Buffer;
+            //cmp [esp], C4
+            CaveMemory.Write_StrBytes("81 3C 24 C4 00 00 00");
+            //jne Check2
+            CaveMemory.Write_StrBytes("75 3F");
+            //push edi
+            CaveMemory.Write_StrBytes("57");
+            //push ecx
+            CaveMemory.Write_StrBytes("51");
+            //push edx
+            CaveMemory.Write_StrBytes("52");
+            //mov edi, RELOAD_SPRITE_ID
+            CaveMemory.Write_StrBytes("BF");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _SprMenuExtraSprites_Offset + (uint)SprMenuExtraSprite.AttractReload));
+            //mov eax, [esp+2C]
+            CaveMemory.Write_StrBytes("8B 44 24 2C");   
+            //push eax
+            CaveMemory.Write_StrBytes("50");
+            //push 05
+            CaveMemory.Write_StrBytes("6A 05");
+            //push 0
+            CaveMemory.Write_StrBytes("6A 00");
+            //push 3f800000
+            CaveMemory.Write_StrBytes("68 00 00 80 3F");
+            //push 3f800000
+            CaveMemory.Write_StrBytes("68 00 00 80 3F");
+            //push 37a7c5ac
+            CaveMemory.Write_StrBytes("68 AC C5 A7 37");
+            //push Y
+            CaveMemory.Write_StrBytes("68");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(160.0f));
+            //push X
+            CaveMemory.Write_StrBytes("68");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(96.0f));
+            //call 4A5EE0
+            CaveMemory.Write_call((UInt32)_Process_MemoryBaseAddress + _DrawFs2SpritesFunction_Offset);
+            //add esp, 20
+            CaveMemory.Write_StrBytes("83 C4 20");
+            //pop edx
+            CaveMemory.Write_StrBytes("5A");
+            //pop ecx
+            CaveMemory.Write_StrBytes("59");
+            //pop edi
+            CaveMemory.Write_StrBytes("5F");
+            //mov [esp+20], 0
+            CaveMemory.Write_StrBytes("C7 44 24 20 00 00 00 00");
+            //jmp return
+            CaveMemory.Write_StrBytes("EB 62");
+
+            //Check 2:
+            //cmp [esp], BF
+            CaveMemory.Write_StrBytes("81 3C 24 BF 00 00 00");
+            //jne Check3
+            CaveMemory.Write_StrBytes("75 3F");
+            //push edi
+            CaveMemory.Write_StrBytes("57");
+            //push ecx
+            CaveMemory.Write_StrBytes("51");
+            //push edx
+            CaveMemory.Write_StrBytes("52");
+            //mov edi, RELOAD_SPRITE_ID
+            CaveMemory.Write_StrBytes("BF");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _SprMenuExtraSprites_Offset + (uint)SprMenuExtraSprite.AttractShells));
+            //mov eax, [esp+2C]
+            CaveMemory.Write_StrBytes("8B 44 24 2C");
+            //push eax
+            CaveMemory.Write_StrBytes("50");
+            //push 05
+            CaveMemory.Write_StrBytes("6A 05");
+            //push 0
+            CaveMemory.Write_StrBytes("6A 00");
+            //push 3f800000
+            CaveMemory.Write_StrBytes("68 00 00 80 3F");
+            //push 3f800000
+            CaveMemory.Write_StrBytes("68 00 00 80 3F");
+            //push 37a7c5ac
+            CaveMemory.Write_StrBytes("68 AC C5 A7 37");
+            //push Y
+            CaveMemory.Write_StrBytes("68");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(284.0f));
+            //push X
+            CaveMemory.Write_StrBytes("68");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(96.0f));
+            //call 4A5EE0
+            CaveMemory.Write_call((UInt32)_Process_MemoryBaseAddress + _DrawFs2SpritesFunction_Offset);
+            //add esp, 20
+            CaveMemory.Write_StrBytes("83 C4 20");
+            //pop edx
+            CaveMemory.Write_StrBytes("5A");
+            //pop ecx
+            CaveMemory.Write_StrBytes("59");
+            //pop edi
+            CaveMemory.Write_StrBytes("5F");
+            //mov [esp+20], 0
+            CaveMemory.Write_StrBytes("C7 44 24 20 00 00 00 00");
+            //jmp return
+            CaveMemory.Write_StrBytes("EB 1A");
+
+            //Check3:
+            //cmp [esp], CB
+            CaveMemory.Write_StrBytes("81 3C 24 CB 00 00 00");
+            //je remove
+            CaveMemory.Write_StrBytes("74 09");
+            //cmp [esp], C6
+            CaveMemory.Write_StrBytes("81 3C 24 C6 00 00 00");
+            //jne return
+            CaveMemory.Write_StrBytes("75 08");
+            //remove:
+            //mov [esp+20], 0
+            CaveMemory.Write_StrBytes("C7 44 24 20 00 00 00 00");
+            //return:
+            //call hod3pc.exe+A5EA0
+            CaveMemory.Write_call((UInt32)_Process_MemoryBaseAddress + _DrawFsSpritesFunction_Offset);
+            //jmp returnhere
+            CaveMemory.Write_jmp((UInt32)_Process_MemoryBaseAddress + _ReplaceAttractModeSprites_Injection.Injection_ReturnOffset);
+
+            Logger.WriteLog("Mod_ReplaceAttractModeSprite() => Adding Codecave at : 0x" + CaveMemory.CaveAddress.ToString("X8"));
+
+            //Code injection
+            IntPtr ProcessHandle = _Process.Handle;
+            UInt32 bytesWritten = 0;
+            UInt32 jumpTo = 0;
+            jumpTo = CaveMemory.CaveAddress - ((UInt32)_Process_MemoryBaseAddress + _ReplaceAttractModeSprites_Injection.Injection_Offset) - 5;
+            Buffer = new List<byte>();
+            Buffer.Add(0xE9);
+            Buffer.AddRange(BitConverter.GetBytes(jumpTo));
+            Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _ReplaceAttractModeSprites_Injection.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);    
         }
 
         //The game is alterning between "arcade" attract mode and "time attack" attract mode by switching a byte 0/1
@@ -1930,7 +2178,109 @@ namespace Hotd3Arcade_Launcher
         private void Mod_NoAutoReload()
         {
             SetNops((UInt32)_Process_MemoryBaseAddress, _Nop_NoAutoReload_1);
-            SetNops((UInt32)_Process_MemoryBaseAddress, _Nop_NoAutoReload_2);
+        }
+
+        //Enable the RELOAD text to appear, and RELOAD Sfx to play when it's needed
+        //SFX drawing will be done on the "VariousThread Mod" because overwise, sprites are poors without transparency :(
+        private void Mod_AddReloadEffects()
+        {
+            //Adding the Sfx when trigger is pushed with no bullets.
+            Codecave CaveMemory_Reload1 = new Codecave(_Process, _Process.MainModule.BaseAddress);
+            CaveMemory_Reload1.Open();
+            CaveMemory_Reload1.Alloc(0x800);
+            List<byte> Buffer;
+            //push eax
+            CaveMemory_Reload1.Write_StrBytes("50");
+            //push ecx
+            CaveMemory_Reload1.Write_StrBytes("51");
+            //mov eax, [eax+4]
+            CaveMemory_Reload1.Write_StrBytes("8B 40 04");
+            //shl eax, 2
+            CaveMemory_Reload1.Write_StrBytes("C1 E0 02");
+            //add eax, CustomDatabank.DisllayReload
+            CaveMemory_Reload1.Write_StrBytes("05");
+            CaveMemory_Reload1.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.ShowReloadP1));
+            //mov [eax, 1]
+            CaveMemory_Reload1.Write_StrBytes("C7 00 01 00 00 00");            
+            //push 00
+            CaveMemory_Reload1.Write_StrBytes("6A 00");
+            //push REloadSfx_ID
+            CaveMemory_Reload1.Write_StrBytes("68");
+            CaveMemory_Reload1.Write_Bytes(BitConverter.GetBytes(_SfxID_Reload));
+            //push 9D2E18
+            CaveMemory_Reload1.Write_StrBytes("68");
+            CaveMemory_Reload1.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _SoundPlayerHandle_Offset));
+            //call play audio
+            CaveMemory_Reload1.Write_call((UInt32)_Process_MemoryBaseAddress + _WndProcCredits_CalledFunctionOffset);
+            //pop ecx
+            CaveMemory_Reload1.Write_StrBytes("59");
+            //pop eax
+            CaveMemory_Reload1.Write_StrBytes("58");
+            //jmp return
+            CaveMemory_Reload1.Write_jmp((UInt32)_Process_MemoryBaseAddress + _AddReloadSfx_Injection1.Injection_ReturnOffset);
+
+            Logger.WriteLog("Mod_AddReloadEffects() => Adding codecave at " + CaveMemory_Reload1.CaveAddress.ToString("X8"));
+
+            //Code injection
+            IntPtr ProcessHandle = _Process.Handle;
+            UInt32 bytesWritten = 0;
+            UInt32 jumpTo = 0;
+            jumpTo = CaveMemory_Reload1.CaveAddress - ((UInt32)_Process_MemoryBaseAddress + _AddReloadSfx_Injection1.Injection_Offset) - 5;
+            Buffer = new List<byte>();
+            Buffer.Add(0xE9);
+            Buffer.AddRange(BitConverter.GetBytes(jumpTo));
+            Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _AddReloadSfx_Injection1.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);
+
+            //-----------------------------------//
+
+            //Adding the Sfx when bullet count hits 0.
+            Codecave CaveMemory_Reload2 = new Codecave(_Process, _Process.MainModule.BaseAddress);
+            CaveMemory_Reload2.Open();
+            CaveMemory_Reload2.Alloc(0x800);
+            //push eax
+            CaveMemory_Reload2.Write_StrBytes("50");
+            //push ecx
+            CaveMemory_Reload2.Write_StrBytes("51");
+            //mov eax, [eax+4]
+            CaveMemory_Reload2.Write_StrBytes("8B 40 04");
+            //shl eax, 2
+            CaveMemory_Reload2.Write_StrBytes("C1 E0 02");
+            //add eax, CustomDatabank.DisllayReload
+            CaveMemory_Reload2.Write_StrBytes("05");
+            CaveMemory_Reload2.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.ShowReloadP1));
+            //mov [eax, 1]
+            CaveMemory_Reload2.Write_StrBytes("C7 00 01 00 00 00");  
+            //push 00
+            CaveMemory_Reload2.Write_StrBytes("6A 00");
+            //push REloadSfx_ID
+            CaveMemory_Reload2.Write_StrBytes("68");
+            CaveMemory_Reload2.Write_Bytes(BitConverter.GetBytes(_SfxID_Reload));
+            //push 9D2E18
+            CaveMemory_Reload2.Write_StrBytes("68");
+            CaveMemory_Reload2.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _SoundPlayerHandle_Offset));
+            //call play audio
+            CaveMemory_Reload2.Write_call((UInt32)_Process_MemoryBaseAddress + _WndProcCredits_CalledFunctionOffset);
+            //pop ecx
+            CaveMemory_Reload2.Write_StrBytes("59");
+            //pop eax
+            CaveMemory_Reload2.Write_StrBytes("58");
+            //jmp return
+            CaveMemory_Reload2.Write_jmp((UInt32)_Process_MemoryBaseAddress + _AddReloadSfx_Injection2.Injection_ReturnOffset);
+
+            Logger.WriteLog("Mod_AddReloadEffects() => Adding codecave at " + CaveMemory_Reload2.CaveAddress.ToString("X8"));
+
+            //Code injection
+            ProcessHandle = _Process.Handle;
+            bytesWritten = 0;
+            jumpTo = 0;
+            jumpTo = CaveMemory_Reload2.CaveAddress - ((UInt32)_Process_MemoryBaseAddress + _AddReloadSfx_Injection2.Injection_Offset) - 5;
+            Buffer = new List<byte>();
+            Buffer.Add(0xE9);
+            Buffer.AddRange(BitConverter.GetBytes(jumpTo));
+            Buffer.Add(0x90);
+            Buffer.Add(0x90);
+            Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _AddReloadSfx_Injection2.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);
+        
         }
         
         //Replace old and ugly "FREEPLAY" displayed on lower screen during gameplay
@@ -2284,7 +2634,7 @@ namespace Hotd3Arcade_Launcher
             CaveMemory.Write_StrBytes("F7 E1");
             //add eax, [Player1Status]
             CaveMemory.Write_StrBytes("05");
-            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _Player1GameStatus));
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _Player1GameStatus_Offset));
             //cmp edi,01
             CaveMemory.Write_StrBytes("83 FF 01");
             //mov edi, [PRESS START SPRITE ID]
@@ -2662,8 +3012,6 @@ namespace Hotd3Arcade_Launcher
         }
 
         #endregion                
-
-      
 
     }
 }

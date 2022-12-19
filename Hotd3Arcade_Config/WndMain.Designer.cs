@@ -74,9 +74,9 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.Chk_DisablePause = new System.Windows.Forms.CheckBox();
             this.Chk_MouseCursor = new System.Windows.Forms.CheckBox();
             this.Chk_Crosshair = new System.Windows.Forms.CheckBox();
-            this.Chk_DisablePause = new System.Windows.Forms.CheckBox();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -629,6 +629,18 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Mod Options";
             // 
+            // Chk_DisablePause
+            // 
+            this.Chk_DisablePause.AutoSize = true;
+            this.Chk_DisablePause.Checked = true;
+            this.Chk_DisablePause.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.Chk_DisablePause.Location = new System.Drawing.Point(15, 74);
+            this.Chk_DisablePause.Name = "Chk_DisablePause";
+            this.Chk_DisablePause.Size = new System.Drawing.Size(137, 17);
+            this.Chk_DisablePause.TabIndex = 34;
+            this.Chk_DisablePause.Text = "Disable In-Game Pause";
+            this.Chk_DisablePause.UseVisualStyleBackColor = true;
+            // 
             // Chk_MouseCursor
             // 
             this.Chk_MouseCursor.AutoSize = true;
@@ -653,18 +665,6 @@
             this.Chk_Crosshair.Text = "Hide Crosshairs";
             this.Chk_Crosshair.UseVisualStyleBackColor = true;
             // 
-            // Chk_DisablePause
-            // 
-            this.Chk_DisablePause.AutoSize = true;
-            this.Chk_DisablePause.Checked = true;
-            this.Chk_DisablePause.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.Chk_DisablePause.Location = new System.Drawing.Point(15, 74);
-            this.Chk_DisablePause.Name = "Chk_DisablePause";
-            this.Chk_DisablePause.Size = new System.Drawing.Size(137, 17);
-            this.Chk_DisablePause.TabIndex = 34;
-            this.Chk_DisablePause.Text = "Disable In-Game Pause";
-            this.Chk_DisablePause.UseVisualStyleBackColor = true;
-            // 
             // WndMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -681,7 +681,7 @@
             this.MaximizeBox = false;
             this.Name = "WndMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "The House of the Dead III - Arcade Configurator v2.0";
+            this.Text = "The House of the Dead III - Arcade Configurator v3.0";
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
