@@ -23,6 +23,9 @@ namespace Hotd3Arcade_Launcher
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hMod, uint dwThreadId);
         public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr dwhkl);
     }
 
     public static class Win32Define
@@ -45,6 +48,13 @@ namespace Hotd3Arcade_Launcher
         public const UInt32 WM_MBUTTONUP = 0x0208;
         public const UInt32 WM_MOUSEWHEEL = 0x020A;
         public const UInt32 WM_SYSKEYDOWN = 0x0104;
+
+
+        public const uint MAPVK_VK_TO_VSC = 0x00;
+        public const uint MAPVK_VSC_TO_VK = 0x01;
+        public const uint MAPVK_VK_TO_CHAR = 0x02;
+        public const uint MAPVK_VSC_TO_VK_EX = 0x03;
+        public const uint MAPVK_VK_TO_VSC_EX = 0x04;
     }
 
     [Flags]

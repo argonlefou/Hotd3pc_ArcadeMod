@@ -73,6 +73,8 @@ namespace Hotd3Arcade_Launcher
         private UInt32 _DrawFs2SpritesFunction_Offset = 0x000A5EE0;
         private UInt32 _DrawFsSpritesFunction_Offset = 0x000A5EA0;
         private UInt32 _GetLocalTimeFunction_Offset = 0x0003D710;   //Caled in HOD3.DAT default values
+        private UInt32 _PostMessageAFunctionPtr_Offset = 0x0014925C;
+        private UInt32 _WindowHandleBasePtr_Offset = 0x00536358;
         private UInt32 _CurrentPath_Offset = 0x0059C5F4;
         private UInt32 _SoundPlayerHandle_Offset = 0x005D2E18;
         private UInt32 _FltConstant_16f_Offset = 0x0001C26BC;
@@ -763,7 +765,7 @@ namespace Hotd3Arcade_Launcher
             Buffer = new List<byte>();
             Buffer.AddRange(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _Credits_Offset));
             CaveMemoryBtnDown.Write_Bytes(Buffer.ToArray());
-            CaveMemoryBtnDown.Write_StrBytes("99 00 00 00");
+            CaveMemoryBtnDown.Write_StrBytes("63 00 00 00");
             //jnl Next
             CaveMemoryBtnDown.Write_StrBytes("7D 46");
             //mov [CreditsKeyPushed], 1
@@ -1313,8 +1315,18 @@ namespace Hotd3Arcade_Launcher
         //Also check for Intro Movie to be skipped on 1st time to get to Title Screen directly (send 1 to the byte written on a [ENTER] press
         //And skip 1st attract mode to show unseen intro movie instead (change screen ID)
         //And skip Menu (sending [ENTER])
-         private void Mod_AddLotOfThingsIntoQuickThread()
+        private void Mod_AddLotOfThingsIntoQuickThread()
         {
+            uint P1Start_ScanCode = _GameConfigurator.RegValues[16];
+            uint P1Start_VirtualKeycode = Win32API.MapVirtualKeyEx(P1Start_ScanCode, Win32Define.MAPVK_VSC_TO_VK_EX, IntPtr.Zero);
+            if (P1Start_VirtualKeycode == 0)
+            {
+                Logger.WriteLog("Mod_AddLotOfThingsIntoQuickThread() => could not convert P1 Start Scancode 0x" + P1Start_ScanCode.ToString("x2") + "to VirtualScancode. Reverting to default : 0x31 (Key [1])");
+                P1Start_VirtualKeycode = 0x31;
+            }
+            else
+                Logger.WriteLog("Mod_AddLotOfThingsIntoQuickThread() =>P1 Start Scancode 0x" + P1Start_ScanCode.ToString("x2") + " converted to VirtualScancode 0x" + P1Start_VirtualKeycode.ToString("X2"));
+
             Codecave CaveMemory = new Codecave(_Process, _Process.MainModule.BaseAddress);
             CaveMemory.Open();
             CaveMemory.Alloc(0x800);
@@ -1422,36 +1434,69 @@ namespace Hotd3Arcade_Launcher
             //add esp, 24
             CaveMemory.Write_StrBytes("83 C4 24");
 
-            //Second Step : 
+            //Skip Intro Movie the first time to go directly to title screen
             //cmp dword ptr [Scene_ID],04
             CaveMemory.Write_StrBytes("83 3D");
-            Buffer = new List<byte>();
-            Buffer.AddRange(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _CurrentSceneID_Offset));
-            CaveMemory.Write_Bytes(Buffer.ToArray());
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _CurrentSceneID_Offset));
             CaveMemory.Write_StrBytes("04");
             //jne Next
-            CaveMemory.Write_StrBytes("75 1D");
+            CaveMemory.Write_StrBytes("75 13");
             //cmp dword ptr [SkipIntro],01
             CaveMemory.Write_StrBytes("83 3D");
-            Buffer = new List<byte>();
-            Buffer.AddRange(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.SkipIntro));
-            CaveMemory.Write_Bytes(Buffer.ToArray());
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.SkipIntro));
             CaveMemory.Write_StrBytes("01");
             //jne Next
-            CaveMemory.Write_StrBytes("75 14");
+            CaveMemory.Write_StrBytes("75 A");
             //mov [hod3pc.exe+3ECF48],00000001
             CaveMemory.Write_StrBytes("C7 05");
-            Buffer = new List<byte>();
-            Buffer.AddRange(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _EnterKeyPressed_Offset));
-            CaveMemory.Write_Bytes(Buffer.ToArray());
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _EnterKeyPressed_Offset));
             CaveMemory.Write_StrBytes("01 00 00 00");
+
+            //On title screen reset the "skip intro movie" flag and send KeyUp Start button (else, user need to push 2x the buttons to enter the game)
+            //cmp dword ptr [Scene_ID],05
+            CaveMemory.Write_StrBytes("83 3D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _CurrentSceneID_Offset));
+            CaveMemory.Write_StrBytes("05");
+            //jne Next
+            CaveMemory.Write_StrBytes("75 2E");
+            //cmp dword ptr [SkipIntro],01
+            CaveMemory.Write_StrBytes("83 3D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.SkipIntro));
+            CaveMemory.Write_StrBytes("01");
+            //jne Next
+            CaveMemory.Write_StrBytes("75 25");            
             //mov [SkipIntro],00000000
             CaveMemory.Write_StrBytes("C7 05");
-            Buffer = new List<byte>();
-            Buffer.AddRange(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.SkipIntro));
-            CaveMemory.Write_Bytes(Buffer.ToArray());
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.SkipIntro));
             CaveMemory.Write_StrBytes("00 00 00 00");
-
+            //PostMessageA() WM_KEYUP / Start_Button
+            //Function address in 54925C
+            //Handle in 936358
+            //push eax
+            CaveMemory.Write_StrBytes("50");
+            //mov eax, [936358]
+            CaveMemory.Write_StrBytes("A1");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _WindowHandleBasePtr_Offset));
+            //mov eax, [eax+38]
+            CaveMemory.Write_StrBytes("8B 40 38");
+            //push 00
+            CaveMemory.Write_StrBytes("6A 00");
+            //push P1 Start VKcode
+            CaveMemory.Write_StrBytes("6A");
+            CaveMemory.Write_Byte((byte)P1Start_VirtualKeycode);
+            //push 0x101 WM_KEYUP
+            CaveMemory.Write_StrBytes("68 01 01 00 00");
+            //push eax 
+            CaveMemory.Write_StrBytes("50");
+            //mov eax, byte ptr[54925C]
+            CaveMemory.Write_StrBytes("A1");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _PostMessageAFunctionPtr_Offset));
+            //call eax
+            CaveMemory.Write_StrBytes("FF D0");
+            //pop eax
+            CaveMemory.Write_StrBytes("58");
+            
+            //First time in attract mode, replace it by the skipped movie intro
             //cmp dword ptr [Scene_ID],06
             CaveMemory.Write_StrBytes("83 3D");
             Buffer = new List<byte>();
@@ -1600,7 +1645,7 @@ namespace Hotd3Arcade_Launcher
             //jmp return
             CaveMemory.Write_jmp((UInt32)_Process_MemoryBaseAddress + _LoopThreadVariousThings_Injection.Injection_ReturnOffset);
 
-            Logger.WriteLog("Mod_AddScreenSprites() => Adding Codecave at : 0x" + CaveMemory.CaveAddress.ToString("X8"));
+            Logger.WriteLog("Mod_AddLotOfThingsIntoQuickThread() => Adding Codecave at : 0x" + CaveMemory.CaveAddress.ToString("X8"));
 
             //Code injection
             IntPtr ProcessHandle = _Process.Handle;

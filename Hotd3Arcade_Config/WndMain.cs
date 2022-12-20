@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Hotd3Arcade_Config
 {
@@ -62,9 +63,16 @@ namespace Hotd3Arcade_Config
         private const string OPTION_HIDE_CURSOR = "HideCursor";
         private const string OPTION_DISABLE_PAUSE = "DisableInGamePause";
 
+        private const string OPTION_VOLUME_BGM = "VolumeBGM";
+        private const string OPTION_VOLUME_SFX = "VolumeSFX";
+        private const string OPTION_VOLUME_VCE = "VolumeVCE"; 
+
+
         public WndMain()
         {
-            InitializeComponent();
+            InitializeComponent();  
+
+            this.Text = "The House of the Dead III - Arcade Configurator v" + System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString();
 
             if (File.Exists(Application.StartupPath + @"\" + CONF_FILENAME))
                 ReadConf();
@@ -229,6 +237,21 @@ namespace Hotd3Arcade_Config
                                                 Chk_DisablePause.Checked = false;
                                         }
                                     } break;
+                                case OPTION_VOLUME_BGM:
+                                    {
+                                        if (int.TryParse(Value, out i_Value))
+                                            TrackBar_BGM.Value = i_Value;
+                                    }break;
+                                case OPTION_VOLUME_SFX:
+                                    {
+                                        if (int.TryParse(Value, out i_Value))
+                                            TrackBar_SFX.Value = i_Value;
+                                    } break;
+                                case OPTION_VOLUME_VCE:
+                                    {
+                                        if (int.TryParse(Value, out i_Value))
+                                            TrackBar_VCE.Value = i_Value;
+                                    } break;
                                 default: break;
                             }
                         }
@@ -273,6 +296,9 @@ namespace Hotd3Arcade_Config
                         sw.WriteLine(OPTION_P2CONTROLS + ":2");
                     else 
                         sw.WriteLine(OPTION_P2CONTROLS + ":0");
+                    sw.WriteLine(OPTION_VOLUME_BGM + ":" + TrackBar_BGM.Value.ToString());
+                    sw.WriteLine(OPTION_VOLUME_SFX + ":" + TrackBar_SFX.Value.ToString());
+                    sw.WriteLine(OPTION_VOLUME_VCE + ":" + TrackBar_VCE.Value.ToString());
 
                     sw.WriteLine("[Mouse Controls]");
                     sw.WriteLine(";LeftClick = 0, RightClick = 1");
@@ -362,6 +388,10 @@ namespace Hotd3Arcade_Config
             Chk_MouseCursor.Checked = true;
             Chk_Crosshair.Checked = true;
             Chk_DisablePause.Checked = true;
+
+            TrackBar_BGM.Value = 255;
+            TrackBar_SFX.Value = 255;
+            TrackBar_VCE.Value = 255;
         }
 
         private void Btn_Browse_Click(object sender, EventArgs e)

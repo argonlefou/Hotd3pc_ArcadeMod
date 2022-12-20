@@ -77,11 +77,22 @@
             this.Chk_DisablePause = new System.Windows.Forms.CheckBox();
             this.Chk_MouseCursor = new System.Windows.Forms.CheckBox();
             this.Chk_Crosshair = new System.Windows.Forms.CheckBox();
+            this.TrackBar_BGM = new System.Windows.Forms.TrackBar();
+            this.label13 = new System.Windows.Forms.Label();
+            this.TrackBar_SFX = new System.Windows.Forms.TrackBar();
+            this.label14 = new System.Windows.Forms.Label();
+            this.TrackBar_VCE = new System.Windows.Forms.TrackBar();
+            this.label17 = new System.Windows.Forms.Label();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.TrackBar_BGM)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.TrackBar_SFX)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.TrackBar_VCE)).BeginInit();
+            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox2
@@ -102,9 +113,9 @@
             this.groupBox2.Controls.Add(this.label8);
             this.groupBox2.Controls.Add(this.label12);
             this.groupBox2.Controls.Add(this.label7);
-            this.groupBox2.Location = new System.Drawing.Point(280, 210);
+            this.groupBox2.Location = new System.Drawing.Point(259, 210);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(187, 261);
+            this.groupBox2.Size = new System.Drawing.Size(187, 270);
             this.groupBox2.TabIndex = 40;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Game Options";
@@ -288,7 +299,7 @@
             // Btn_Save
             // 
             this.Btn_Save.Enabled = false;
-            this.Btn_Save.Location = new System.Drawing.Point(12, 537);
+            this.Btn_Save.Location = new System.Drawing.Point(346, 486);
             this.Btn_Save.Name = "Btn_Save";
             this.Btn_Save.Size = new System.Drawing.Size(232, 42);
             this.Btn_Save.TabIndex = 21;
@@ -302,7 +313,7 @@
             this.groupBox1.Controls.Add(this.Txt_FilePath);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(455, 66);
+            this.groupBox1.Size = new System.Drawing.Size(648, 66);
             this.groupBox1.TabIndex = 39;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Path to hod3.exe :";
@@ -310,7 +321,7 @@
             // Btn_Browse
             // 
             this.Btn_Browse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Btn_Browse.Location = new System.Drawing.Point(378, 22);
+            this.Btn_Browse.Location = new System.Drawing.Point(571, 22);
             this.Btn_Browse.Name = "Btn_Browse";
             this.Btn_Browse.Size = new System.Drawing.Size(62, 28);
             this.Btn_Browse.TabIndex = 4;
@@ -324,7 +335,7 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.Txt_FilePath.Location = new System.Drawing.Point(6, 27);
             this.Txt_FilePath.Name = "Txt_FilePath";
-            this.Txt_FilePath.Size = new System.Drawing.Size(349, 20);
+            this.Txt_FilePath.Size = new System.Drawing.Size(542, 20);
             this.Txt_FilePath.TabIndex = 1;
             this.Txt_FilePath.TextChanged += new System.EventHandler(this.Txt_FilePath_TextChanged);
             // 
@@ -352,7 +363,7 @@
             this.groupBox3.Controls.Add(this.Cbox_MaxLife);
             this.groupBox3.Location = new System.Drawing.Point(12, 210);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(232, 309);
+            this.groupBox3.Size = new System.Drawing.Size(232, 318);
             this.groupBox3.TabIndex = 41;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Arcade System Menu";
@@ -622,9 +633,9 @@
             this.groupBox4.Controls.Add(this.Chk_DisablePause);
             this.groupBox4.Controls.Add(this.Chk_MouseCursor);
             this.groupBox4.Controls.Add(this.Chk_Crosshair);
-            this.groupBox4.Location = new System.Drawing.Point(280, 477);
+            this.groupBox4.Location = new System.Drawing.Point(473, 84);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(187, 102);
+            this.groupBox4.Size = new System.Drawing.Size(187, 107);
             this.groupBox4.TabIndex = 41;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Mod Options";
@@ -665,11 +676,90 @@
             this.Chk_Crosshair.Text = "Hide Crosshairs";
             this.Chk_Crosshair.UseVisualStyleBackColor = true;
             // 
+            // TrackBar_BGM
+            // 
+            this.TrackBar_BGM.LargeChange = 25;
+            this.TrackBar_BGM.Location = new System.Drawing.Point(13, 49);
+            this.TrackBar_BGM.Maximum = 255;
+            this.TrackBar_BGM.Name = "TrackBar_BGM";
+            this.TrackBar_BGM.Size = new System.Drawing.Size(181, 45);
+            this.TrackBar_BGM.SmallChange = 10;
+            this.TrackBar_BGM.TabIndex = 42;
+            this.TrackBar_BGM.TickFrequency = 25;
+            this.TrackBar_BGM.TickStyle = System.Windows.Forms.TickStyle.Both;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(10, 33);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(102, 13);
+            this.label13.TabIndex = 45;
+            this.label13.Text = "Background Music :";
+            // 
+            // TrackBar_SFX
+            // 
+            this.TrackBar_SFX.LargeChange = 25;
+            this.TrackBar_SFX.Location = new System.Drawing.Point(13, 130);
+            this.TrackBar_SFX.Maximum = 255;
+            this.TrackBar_SFX.Name = "TrackBar_SFX";
+            this.TrackBar_SFX.Size = new System.Drawing.Size(181, 45);
+            this.TrackBar_SFX.SmallChange = 10;
+            this.TrackBar_SFX.TabIndex = 46;
+            this.TrackBar_SFX.TickFrequency = 25;
+            this.TrackBar_SFX.TickStyle = System.Windows.Forms.TickStyle.Both;
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(10, 114);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(80, 13);
+            this.label14.TabIndex = 49;
+            this.label14.Text = "Sound Effects :";
+            // 
+            // TrackBar_VCE
+            // 
+            this.TrackBar_VCE.LargeChange = 25;
+            this.TrackBar_VCE.Location = new System.Drawing.Point(13, 211);
+            this.TrackBar_VCE.Maximum = 255;
+            this.TrackBar_VCE.Name = "TrackBar_VCE";
+            this.TrackBar_VCE.Size = new System.Drawing.Size(181, 45);
+            this.TrackBar_VCE.SmallChange = 10;
+            this.TrackBar_VCE.TabIndex = 50;
+            this.TrackBar_VCE.TickFrequency = 25;
+            this.TrackBar_VCE.TickStyle = System.Windows.Forms.TickStyle.Both;
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(10, 195);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(40, 13);
+            this.label17.TabIndex = 53;
+            this.label17.Text = "Voice :";
+            // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.label17);
+            this.groupBox5.Controls.Add(this.TrackBar_VCE);
+            this.groupBox5.Controls.Add(this.label14);
+            this.groupBox5.Controls.Add(this.TrackBar_SFX);
+            this.groupBox5.Controls.Add(this.label13);
+            this.groupBox5.Controls.Add(this.TrackBar_BGM);
+            this.groupBox5.Location = new System.Drawing.Point(460, 210);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(200, 270);
+            this.groupBox5.TabIndex = 43;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "Sound Options";
+            // 
             // WndMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(482, 592);
+            this.ClientSize = new System.Drawing.Size(672, 535);
+            this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.pictureBox1);
@@ -691,6 +781,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.TrackBar_BGM)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.TrackBar_SFX)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.TrackBar_VCE)).EndInit();
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -745,6 +840,13 @@
         private System.Windows.Forms.CheckBox Chk_Crosshair;
         private System.Windows.Forms.CheckBox Chk_MouseCursor;
         private System.Windows.Forms.CheckBox Chk_DisablePause;
+        private System.Windows.Forms.TrackBar TrackBar_BGM;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.TrackBar TrackBar_SFX;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.TrackBar TrackBar_VCE;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.GroupBox groupBox5;
     }
 }
 
