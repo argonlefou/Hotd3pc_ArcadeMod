@@ -47,7 +47,7 @@ The game will create the needed folders to store game saved data at runtime.
 
 ## Mod Configuration
 
-* From the previously unzipped folder, run the `Hotd3Arcade_Config.exe` tool. :warning: **You may have to run it as Administrator** :warning:
+* From the previously unzipped folder, run the `Hotd3Arcade_Config.exe` tool.
 * Set the path to your `hod3pc.exe` file.
 * You can also change ARCADE settings, as well as most of the settings available in the genuine game launcher utility.
 * Save once you're done.
