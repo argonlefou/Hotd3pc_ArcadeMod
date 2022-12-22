@@ -63,6 +63,16 @@ namespace Hotd3Arcade_Launcher.Properties {
         /// <summary>
         ///   Recherche une ressource localisée de type System.Byte[].
         /// </summary>
+        internal static byte[] DefaultRanking {
+            get {
+                object obj = ResourceManager.GetObject("DefaultRanking", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une ressource localisée de type System.Byte[].
+        /// </summary>
         internal static byte[] spr_logo {
             get {
                 object obj = ResourceManager.GetObject("spr_logo", resourceCulture);

@@ -90,7 +90,7 @@ namespace Hotd3Arcade_Launcher
         //+599C58	:	EXIT (English)
         //+599C64	:	EXIT (german)                   Attract "reload"             
         //+599C70	:	EXIT (french)
-        //+599C7C	:	EXIT (spanish)
+        //+599C7C	:	EXIT (spanish)                  Rankings
         //+599C88	:	EXIT (italian)                  Attract "Shells"
         //+599D60	:	Sega trademark
 
@@ -139,6 +139,7 @@ namespace Hotd3Arcade_Launcher
         private enum SprMenuExtraSprite
         {
             AttractReload = 0x0C,
+            Rankings = 0x24,
             AttractShells = 0x30,
             Credits = 0x78,
             Freeplay = 0x90,
@@ -197,6 +198,9 @@ namespace Hotd3Arcade_Launcher
         private UInt32 _StartGameFromTitle_Offset1 = 0x0003E4F2;
         private UInt32 _StartGameFromTitle_Offset2 = 0x0008D9A4;
         private UInt32 _StartGameFromTitleSwitchCase_Offset = 0x0008E01E;
+        private UInt32 _NameEntryTitleCorrection_Offset = 0x00080705;
+        private UInt32 _AutoSaveAfterEndGame_Offset = 0x0002E3A1;
+        private UInt32 _DefaultRankingValues_Offset = 0x00206E48;
 
         private NopStruct _Nop_RegQuerryValueExA1 = new NopStruct(0x000B25BA, 6);
         private NopStruct _Nop_RegQuerryValueExA2 = new NopStruct(0x000B25EC, 6);
@@ -247,7 +251,8 @@ namespace Hotd3Arcade_Launcher
         private InjectionStruct _AddReloadSfx_Injection1 = new InjectionStruct(0x0008DF1E, 5);
         private InjectionStruct _AddReloadSfx_Injection2 = new InjectionStruct(0x0008DED4, 7);
         private InjectionStruct _ReplaceAttractModeSprites_Injection = new InjectionStruct(0x000A960A, 5);
-
+        private InjectionStruct _RemoveEndgameSavePopup_Injection = new InjectionStruct(0x0002BA56, 6);
+        private InjectionStruct _ReplaceRankingTitleSprite_Injection = new InjectionStruct(0x000A68CB ,5);
 
         //MD5 check of target binaries, may help to know if it's the wrong version or not compatible
         protected Dictionary<string, string> _KnownMd5Prints;
@@ -297,10 +302,19 @@ namespace Hotd3Arcade_Launcher
             _KnownMd5Prints.Add("hod3pc MYTH Release", "0228818e9412fc218fcd24bfd829a5a0");
             _KnownMd5Prints.Add("hod3pc TEST", "733da4e3cfe24b015e5f795811d481e6");
             _KnownMd5Prints.Add("hod3pc Unknown Release #1", "51dd72f83c0de5b27c0358ad11e2a036");
-            _KnownMd5Prints.Add("hod3pc Unknown Release #2", "e4819dcf2105b85a7e7bc9dc66159f5c");   
+            _KnownMd5Prints.Add("hod3pc Unknown Release #2", "e4819dcf2105b85a7e7bc9dc66159f5c");
 
             if (!System.IO.Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + HOD3_CUSTOM_LOCAL_FOLDER))
-                Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + HOD3_CUSTOM_LOCAL_FOLDER);
+            {
+                try
+                {
+                    Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + HOD3_CUSTOM_LOCAL_FOLDER);
+                }
+                catch (Exception Ex)
+                {
+                    Logger.WriteLog("Hotd3Arcade_Launcher() => Impossible to create the directory " + AppDomain.CurrentDomain.BaseDirectory + HOD3_CUSTOM_LOCAL_FOLDER + " : " + Ex.Message.ToString());
+                }
+            }
         }
 
         /// <summary>
@@ -399,6 +413,9 @@ namespace Hotd3Arcade_Launcher
 
         public void Apply_Hacks()
         {
+            //Small Signature :)
+            WriteBytes((UInt32)_Process_MemoryBaseAddress + _DefaultRankingValues_Offset, Properties.Resources.DefaultRanking);
+
             //Start Modding:
             //Create functions and storage for later
             Create_DataBank();
@@ -450,6 +467,10 @@ namespace Hotd3Arcade_Launcher
             Mod_ReplaceCreditsDigit2SpriteInGame();
             Mod_ReplacePushStartButtonSpriteInGame();
             Mod_ForceContinueDispay();
+            Mod_NameEntryTitleCorrection();
+            Mod_RemoveEndgameSavePopup();
+            Mod_AutoSaveAfterEndGame();
+            Mod_ReplaceRankingTitleSprite();
             Mod_ConfirmExitGame();
 
             if (_GameConfigurator.HideCrosshairs == 1)
@@ -1407,7 +1428,7 @@ namespace Hotd3Arcade_Launcher
             CaveMemory.Write_StrBytes("83 3D");
             CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _Player2GameStatus_Offset));
             CaveMemory.Write_StrBytes("05");
-            //jne CheckP2
+            //jne Next
             CaveMemory.Write_StrBytes("75 2F");
             //push 3F800000
             CaveMemory.Write_StrBytes("68 00 00 80 3F");
@@ -1727,6 +1748,7 @@ namespace Hotd3Arcade_Launcher
         }
 
         //Replaceing instructions sprites with arcade ones (no more autoreload, etc...)
+        //To enable the Reload in the attract, we just need to write 1 in 767AB0.....but we need to find where to put the instruction :(
         private void Mod_ReplaceAttractModeSprites()
         {
             Codecave CaveMemory = new Codecave(_Process, _Process.MainModule.BaseAddress);
@@ -2242,7 +2264,7 @@ namespace Hotd3Arcade_Launcher
             CaveMemory_Reload1.Write_StrBytes("8B 40 04");
             //shl eax, 2
             CaveMemory_Reload1.Write_StrBytes("C1 E0 02");
-            //add eax, CustomDatabank.DisllayReload
+            //add eax, CustomDatabank.DisplayReload
             CaveMemory_Reload1.Write_StrBytes("05");
             CaveMemory_Reload1.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.ShowReloadP1));
             //mov [eax, 1]
@@ -2282,6 +2304,18 @@ namespace Hotd3Arcade_Launcher
             Codecave CaveMemory_Reload2 = new Codecave(_Process, _Process.MainModule.BaseAddress);
             CaveMemory_Reload2.Open();
             CaveMemory_Reload2.Alloc(0x800);
+            //mov [eax+68], 0
+            CaveMemory_Reload2.Write_StrBytes("C7 40 68 00 00 00 00");
+            //Keeping autoreload for attract mode
+            //cmp dword ptr [SCENE_ID],06
+            CaveMemory_Reload2.Write_StrBytes("83 3D");
+            CaveMemory_Reload2.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _CurrentSceneID_Offset));
+            CaveMemory_Reload2.Write_StrBytes("06");
+            //jne NExt
+            CaveMemory_Reload2.Write_StrBytes("75 03");
+            //mov [ebp+18], bl
+            CaveMemory_Reload2.Write_StrBytes("88 5D 18");
+            //NExt:
             //push eax
             CaveMemory_Reload2.Write_StrBytes("50");
             //push ecx
@@ -2758,6 +2792,121 @@ namespace Hotd3Arcade_Launcher
         {
             WriteByte((UInt32)_Process_MemoryBaseAddress + _HideCrosshairs_Offset, 0x00);
         }   
+
+        //Removing the "SurvivalMode" subtitle and recentering the title
+        private void Mod_NameEntryTitleCorrection()
+        {
+            WriteByte((UInt32)_Process_MemoryBaseAddress + _NameEntryTitleCorrection_Offset + 3, 0x28);
+            WriteBytes((UInt32)_Process_MemoryBaseAddress + _NameEntryTitleCorrection_Offset + 0x1F, new byte[]{ 0x00, 0x90, 0x90, 0x90 });
+        }
+
+        //Removing the "Save Game ?" popup displayed after beating the game : items are put in a loop, we just set alpha to 0
+        private void Mod_RemoveEndgameSavePopup()
+        {
+            //Adding the new one
+            Codecave CaveMemory = new Codecave(_Process, _Process.MainModule.BaseAddress);
+            CaveMemory.Open();
+            CaveMemory.Alloc(0x800);
+            List<byte> Buffer;
+            //mov ecx,[esi+24] (= original alpha value)
+            CaveMemory.Write_StrBytes("8B 4E 24");
+            //cmp dword ptr [SCENE_ID],0A
+            CaveMemory.Write_StrBytes("83 3D");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _CurrentSceneID_Offset));
+            CaveMemory.Write_StrBytes("0A");
+            //jne originalcode
+            CaveMemory.Write_StrBytes("75 02");
+            //xor ecx,ecx (= set alpha to 0)
+            CaveMemory.Write_StrBytes("31 C9");
+            //Originalcode:
+            //mov edx,[esi+20]
+            CaveMemory.Write_StrBytes("8B 56 20");
+            //jmp return
+            CaveMemory.Write_jmp((UInt32)_Process_MemoryBaseAddress + _RemoveEndgameSavePopup_Injection.Injection_ReturnOffset);
+
+            Logger.WriteLog("Mod_RemoveEndgameSavePopup() => Adding codecave at " + CaveMemory.CaveAddress.ToString("X8"));
+
+            //Code injection
+            IntPtr ProcessHandle = _Process.Handle;
+            UInt32 bytesWritten = 0;
+            UInt32 jumpTo = 0;
+            jumpTo = CaveMemory.CaveAddress - ((UInt32)_Process_MemoryBaseAddress + _RemoveEndgameSavePopup_Injection.Injection_Offset) - 5;
+            Buffer = new List<byte>();
+            Buffer.Add(0xE9);
+            Buffer.AddRange(BitConverter.GetBytes(jumpTo));
+            Buffer.Add(0x90);
+            Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _RemoveEndgameSavePopup_Injection.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);                     
+        }
+
+        //Now that the popup is removed, autosaving is needed !
+        //Forcing jmp to "NO" so that the following popud does not appear, replacing the validating sound by the save file write call
+        private void Mod_AutoSaveAfterEndGame()
+        {
+            WriteBytes((UInt32)_Process_MemoryBaseAddress + _AutoSaveAfterEndGame_Offset, new byte[] {0x52, 0x56, 0xBE, 0x60, 0x30, 0x9D, 0x00, 0xE8, 0x33, 0xF2, 0x00, 0x00, 0x5E, 0x5A, 0xEB, 0x1A });
+        }
+
+        //The windows game is displaying "SURVIVAL MODE" instead of just "RANKINGS"
+        private void Mod_ReplaceRankingTitleSprite()
+        {
+            Codecave CaveMemory = new Codecave(_Process, _Process.MainModule.BaseAddress);
+            CaveMemory.Open();
+            CaveMemory.Alloc(0x800);
+            List<byte> Buffer;
+            //cmp [esp],00000357
+            CaveMemory.Write_StrBytes("81 3C 24 57 03 00 00");
+            //jne Next
+            CaveMemory.Write_StrBytes("75 2A");
+            //mov [esp+1C],00000006     //center sprite
+            CaveMemory.Write_StrBytes("C7 44 24 1C 06 00 00 00");
+            //mov [esp+04],43A00000     //mid screen X
+            CaveMemory.Write_StrBytes("C7 44 24 04");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes(320.0f));
+            //push edi
+            CaveMemory.Write_StrBytes("57");
+            //push eax
+            CaveMemory.Write_StrBytes("50");
+            //push ecx
+            CaveMemory.Write_StrBytes("51");
+            //push edx
+            CaveMemory.Write_StrBytes("52");
+            //mov edi, SPRITE_ID RANKING
+            CaveMemory.Write_StrBytes("BF");
+            CaveMemory.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _SprMenuExtraSprites_Offset + (uint)SprMenuExtraSprite.Rankings));
+            //add esp, 14
+            CaveMemory.Write_StrBytes("83 C4 14");
+            //Call draw
+            CaveMemory.Write_call((UInt32)_Process_MemoryBaseAddress + _DrawFs2SpritesFunction_Offset);
+            //sub esp, 14
+            CaveMemory.Write_StrBytes("83 EC 14");
+            //push edx
+            CaveMemory.Write_StrBytes("5A");
+            //push ecx
+            CaveMemory.Write_StrBytes("59");
+            //push eax
+            CaveMemory.Write_StrBytes("58");
+            //push edi
+            CaveMemory.Write_StrBytes("5F");
+            //jmp exit
+            //push edi
+            CaveMemory.Write_StrBytes("EB 05");
+            //Original draw
+            CaveMemory.Write_call((UInt32)_Process_MemoryBaseAddress + _DrawFsSpritesFunction_Offset);
+            //jmp return
+            CaveMemory.Write_jmp((UInt32)_Process_MemoryBaseAddress + _ReplaceRankingTitleSprite_Injection.Injection_ReturnOffset);
+
+            Logger.WriteLog("Mod_ReplaceRankingTitleSprite() => Adding codecave at " + CaveMemory.CaveAddress.ToString("X8"));
+
+            //Code injection
+            IntPtr ProcessHandle = _Process.Handle;
+            UInt32 bytesWritten = 0;
+            UInt32 jumpTo = 0;
+            jumpTo = CaveMemory.CaveAddress - ((UInt32)_Process_MemoryBaseAddress + _ReplaceRankingTitleSprite_Injection.Injection_Offset) - 5;
+            Buffer = new List<byte>();
+            Buffer.Add(0xE9);
+            Buffer.AddRange(BitConverter.GetBytes(jumpTo));
+            Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _ReplaceRankingTitleSprite_Injection.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);                     
+       
+        }
 
         //On exit (close window Cross, not ALT+F4) there's a popup that we can remove
         private void Mod_ConfirmExitGame()
