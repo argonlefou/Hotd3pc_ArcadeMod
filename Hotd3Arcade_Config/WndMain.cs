@@ -62,6 +62,7 @@ namespace Hotd3Arcade_Config
         private const string OPTION_HIDE_CROSSHAIRS = "HideCrosshairs";
         private const string OPTION_HIDE_CURSOR = "HideCursor";
         private const string OPTION_DISABLE_PAUSE = "DisableInGamePause";
+        private const string OPTION_DISPLAY_SCORE = "DisplayScore";
 
         private const string OPTION_VOLUME_BGM = "VolumeBGM";
         private const string OPTION_VOLUME_SFX = "VolumeSFX";
@@ -237,6 +238,16 @@ namespace Hotd3Arcade_Config
                                                 Chk_DisablePause.Checked = false;
                                         }
                                     } break;
+                                case OPTION_DISPLAY_SCORE:
+                                    {
+                                        if (int.TryParse(Value, out i_Value))
+                                        {
+                                            if (i_Value == 1)
+                                                Chk_DisplayScore.Checked = true;
+                                            else
+                                                Chk_DisplayScore.Checked = false;
+                                        }
+                                    } break;
                                 case OPTION_VOLUME_BGM:
                                     {
                                         if (int.TryParse(Value, out i_Value))
@@ -350,6 +361,11 @@ namespace Hotd3Arcade_Config
                         sw.WriteLine(OPTION_DISABLE_PAUSE + ":1");
                     else
                         sw.WriteLine(OPTION_DISABLE_PAUSE + ":0");
+
+                    if (Chk_DisplayScore.Checked)
+                        sw.WriteLine(OPTION_DISPLAY_SCORE + ":1");
+                    else
+                        sw.WriteLine(OPTION_DISPLAY_SCORE + ":0");
 
                     MessageBox.Show("Config succesfully saved to :\n" + Application.StartupPath + @"\" + CONF_FILENAME, "Hod3 Arcade Configurator", MessageBoxButtons.OK, MessageBoxIcon.Information);
 

@@ -65,6 +65,7 @@ namespace Hotd3Arcade_Launcher
         private const string OPTION_HIDE_CROSSHAIR = "HideCrosshairs";
         private const string OPTION_HIDE_CURSOR = "HideCursor";
         private const string OPTION_DISABLE_PAUSE = "DisableInGamePause";
+        private const string OPTION_DISPLAY_SCORE = "DisplayScore";
 
         #endregion
 
@@ -130,6 +131,7 @@ namespace Hotd3Arcade_Launcher
         private UInt32 _HideCursor = 1;
         private UInt32 _HideCrosshairs = 1;
         private UInt32 _DisablePause = 1;
+        private UInt32 _DisplayScore = 0;
         private UInt32 _CreditsToStart = 1;
         private UInt32 _CreditsToContinue = 1;
         private UInt32 _MaxLife = 5;
@@ -177,6 +179,9 @@ namespace Hotd3Arcade_Launcher
 
         public UInt32 DisablePause
         { get { return _DisablePause; } }
+
+        public UInt32 DisplayScore
+        { get { return _DisplayScore; } }
 
         public UInt32 CreditsToStart
         { get { return _CreditsToStart; } }
@@ -446,6 +451,10 @@ namespace Hotd3Arcade_Launcher
                                         {
                                             _DisablePause = (byte)i_Value;
                                         } break;
+                                    case OPTION_DISPLAY_SCORE:
+                                        {
+                                            _DisplayScore = (byte)i_Value;
+                                        }break;
 
                                     default: break;
                                 }

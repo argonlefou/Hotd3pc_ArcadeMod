@@ -74,6 +74,7 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.Chk_DisplayScore = new System.Windows.Forms.CheckBox();
             this.Chk_DisablePause = new System.Windows.Forms.CheckBox();
             this.Chk_MouseCursor = new System.Windows.Forms.CheckBox();
             this.Chk_Crosshair = new System.Windows.Forms.CheckBox();
@@ -620,7 +621,7 @@
             this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.pictureBox1.Location = new System.Drawing.Point(12, 84);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(455, 107);
+            this.pictureBox1.Size = new System.Drawing.Size(455, 120);
             this.pictureBox1.TabIndex = 36;
             this.pictureBox1.TabStop = false;
             // 
@@ -630,22 +631,35 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.Chk_DisplayScore);
             this.groupBox4.Controls.Add(this.Chk_DisablePause);
             this.groupBox4.Controls.Add(this.Chk_MouseCursor);
             this.groupBox4.Controls.Add(this.Chk_Crosshair);
             this.groupBox4.Location = new System.Drawing.Point(473, 84);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(187, 107);
+            this.groupBox4.Size = new System.Drawing.Size(187, 120);
             this.groupBox4.TabIndex = 41;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Mod Options";
+            // 
+            // Chk_DisplayScore
+            // 
+            this.Chk_DisplayScore.AutoSize = true;
+            this.Chk_DisplayScore.Checked = true;
+            this.Chk_DisplayScore.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.Chk_DisplayScore.Location = new System.Drawing.Point(15, 88);
+            this.Chk_DisplayScore.Name = "Chk_DisplayScore";
+            this.Chk_DisplayScore.Size = new System.Drawing.Size(124, 17);
+            this.Chk_DisplayScore.TabIndex = 35;
+            this.Chk_DisplayScore.Text = "Show Score in game";
+            this.Chk_DisplayScore.UseVisualStyleBackColor = true;
             // 
             // Chk_DisablePause
             // 
             this.Chk_DisablePause.AutoSize = true;
             this.Chk_DisablePause.Checked = true;
             this.Chk_DisablePause.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.Chk_DisablePause.Location = new System.Drawing.Point(15, 74);
+            this.Chk_DisablePause.Location = new System.Drawing.Point(15, 65);
             this.Chk_DisablePause.Name = "Chk_DisablePause";
             this.Chk_DisablePause.Size = new System.Drawing.Size(137, 17);
             this.Chk_DisablePause.TabIndex = 34;
@@ -657,7 +671,7 @@
             this.Chk_MouseCursor.AutoSize = true;
             this.Chk_MouseCursor.Checked = true;
             this.Chk_MouseCursor.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.Chk_MouseCursor.Location = new System.Drawing.Point(15, 28);
+            this.Chk_MouseCursor.Location = new System.Drawing.Point(15, 19);
             this.Chk_MouseCursor.Name = "Chk_MouseCursor";
             this.Chk_MouseCursor.Size = new System.Drawing.Size(116, 17);
             this.Chk_MouseCursor.TabIndex = 33;
@@ -669,7 +683,7 @@
             this.Chk_Crosshair.AutoSize = true;
             this.Chk_Crosshair.Checked = true;
             this.Chk_Crosshair.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.Chk_Crosshair.Location = new System.Drawing.Point(15, 51);
+            this.Chk_Crosshair.Location = new System.Drawing.Point(15, 42);
             this.Chk_Crosshair.Name = "Chk_Crosshair";
             this.Chk_Crosshair.Size = new System.Drawing.Size(99, 17);
             this.Chk_Crosshair.TabIndex = 32;
@@ -771,7 +785,7 @@
             this.MaximizeBox = false;
             this.Name = "WndMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "The House of the Dead III - Arcade Configurator v3.0";
+            this.Text = "The House of the Dead III - Arcade Configurator v6.0";
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
@@ -847,6 +861,7 @@
         private System.Windows.Forms.TrackBar TrackBar_VCE;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.CheckBox Chk_DisplayScore;
     }
 }
 

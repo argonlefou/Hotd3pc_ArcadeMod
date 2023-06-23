@@ -58,6 +58,7 @@ namespace Hotd3Arcade_Launcher
         //Game Memory Data
         private UInt32 _EnterKeyPressed_Offset = 0x0003ECF48;
         private UInt32 _FlagFreeplay_Offset = 0x3B7E17;
+        //private UInt32 _FlagDisplayScore_Offset = 0x3B8A78;
         private UInt32 _Credits_Offset = 0x003B7DD0;
         private UInt32 _CreditsToStart_Offset = 0x003B7E1C;
         private UInt32 _CreditsToContinue_Offset = 0x003B7E1D;
@@ -221,6 +222,8 @@ namespace Hotd3Arcade_Launcher
         private NopStruct _Nop_NoAutoReload_1 = new NopStruct(0x0008DEDB, 3);        
         private NopStruct _Nop_Arcade_Mode_Display = new NopStruct(0x0008FD29, 2);    
         private NopStruct _Nop_ConfirmExitGame = new NopStruct(0x000B2AB2, 12);
+        //private NopStruct _Nop_ResetScoreDisplayFlag = new NopStruct(0x00077F75, 9);
+        private NopStruct _Nop_ScoreDisplayFlagTest = new NopStruct(0x0008F1C7, 2);
 
         private InjectionStruct _WndProcCreditsBtnUp_Injection = new InjectionStruct(0x000B2A4B, 7);
         private InjectionStruct _WndProcCreditsBtnDown_Injection = new InjectionStruct(0x000B299B, 7);
@@ -455,6 +458,9 @@ namespace Hotd3Arcade_Launcher
 
             if (_GameConfigurator.DisablePause == 1)
                 Mod_DisableInGamePause_v2();
+
+            if (_GameConfigurator.DisplayScore == 1)
+                Mod_DisplayScore();
 
             Mod_SetMaxLife();
             Mod_FastReload();
@@ -2223,6 +2229,18 @@ namespace Hotd3Arcade_Launcher
             WriteBytes((UInt32)_Process_MemoryBaseAddress + _DisableInGamePause_v2_Offset, new byte[] { 0x31, 0xC0, 0x90, 0x90 });
         }
 
+        //Replace the Cheat sequence to be done in the main menu to display score in game
+        private void Mod_DisplayScore()
+        {
+            //Set 1 to the flag
+            //WriteByte((UInt32)_Process_MemoryBaseAddress + _FlagDisplayScore_Offset, 0x01);
+            //Nop the reset procedure : by default the flag is reset after each end of game and return to the main menu
+            //SetNops((UInt32)_Process_MemoryBaseAddress, _Nop_ResetScoreDisplayFlag);
+
+            //Can also force true the Flag test @+8F1C8, maybe easier
+            SetNops((UInt32)_Process_MemoryBaseAddress, _Nop_ScoreDisplayFlagTest);
+        }
+
          //Hide gun display during gameplay, like arcade version of the game
         //Only display them during reload
         private void Mod_HideGuns()
@@ -2297,7 +2315,7 @@ namespace Hotd3Arcade_Launcher
             Buffer.Add(0xE9);
             Buffer.AddRange(BitConverter.GetBytes(jumpTo));
             Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _AddReloadSfx_Injection1.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);
-
+            
             //-----------------------------------//
 
             //Adding the Sfx when bullet count hits 0.
