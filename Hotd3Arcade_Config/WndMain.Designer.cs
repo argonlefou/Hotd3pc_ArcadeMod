@@ -785,7 +785,7 @@
             this.MaximizeBox = false;
             this.Name = "WndMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "The House of the Dead III - Arcade Configurator v6.0";
+            this.Text = "The House of the Dead III - Arcade Configurator v7.0";
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);

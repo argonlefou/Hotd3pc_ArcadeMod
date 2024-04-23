@@ -47,6 +47,7 @@ namespace Hotd3Arcade_Launcher
         //4 Bytes => audi ID to use when calling the function 4A3D80
         //4 Bytes => memory address corresponding to the file path to load
         private UInt32 _SfxID_Reload = 0x0210FA9;
+        private UInt32 _SfxID_Reload02 = 0x220FA9;  //--> For future use if we need to play that sound after the first "RELOAD !" when player continue to push the trigger without ammo
         //Coin sound is not in the table, that's why we will use the start SFX entry (not used anymore, at the title screen)
         private UInt32 _SfxID_ToUseForCoin = 0x10BA9;   //start02.aif
         
@@ -2346,17 +2347,21 @@ namespace Hotd3Arcade_Launcher
             CaveMemory_Reload2.Write_StrBytes("05");
             CaveMemory_Reload2.Write_Bytes(BitConverter.GetBytes(_DataBank_Address + (uint)DataBank_Offset.ShowReloadP1));
             //mov [eax, 1]
-            CaveMemory_Reload2.Write_StrBytes("C7 00 01 00 00 00");  
-            //push 00
-            CaveMemory_Reload2.Write_StrBytes("6A 00");
-            //push REloadSfx_ID
-            CaveMemory_Reload2.Write_StrBytes("68");
-            CaveMemory_Reload2.Write_Bytes(BitConverter.GetBytes(_SfxID_Reload));
-            //push 9D2E18
-            CaveMemory_Reload2.Write_StrBytes("68");
-            CaveMemory_Reload2.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _SoundPlayerHandle_Offset));
-            //call play audio
-            CaveMemory_Reload2.Write_call((UInt32)_Process_MemoryBaseAddress + _WndProcCredits_CalledFunctionOffset);
+            CaveMemory_Reload2.Write_StrBytes("C7 00 01 00 00 00");
+//--------------------------------------------------------------------------------------------------------------------------------------
+// Reload SFX should not be played when ammo counter reaches 0, but only if the player push the trigger with no Ammo 
+//--------------------------------------------------------------------------------------------------------------------------------------
+//            //push 00
+//            CaveMemory_Reload2.Write_StrBytes("6A 00");
+//            //push REloadSfx_ID
+//            CaveMemory_Reload2.Write_StrBytes("68");
+//            CaveMemory_Reload2.Write_Bytes(BitConverter.GetBytes(_SfxID_Reload));
+//            //push 9D2E18
+//            CaveMemory_Reload2.Write_StrBytes("68");
+//            CaveMemory_Reload2.Write_Bytes(BitConverter.GetBytes((UInt32)_Process_MemoryBaseAddress + _SoundPlayerHandle_Offset));
+//            //call play audio
+//            CaveMemory_Reload2.Write_call((UInt32)_Process_MemoryBaseAddress + _WndProcCredits_CalledFunctionOffset);
+//--------------------------------------------------------------------------------------------------------------------------------------
             //pop ecx
             CaveMemory_Reload2.Write_StrBytes("59");
             //pop eax
@@ -2376,8 +2381,7 @@ namespace Hotd3Arcade_Launcher
             Buffer.AddRange(BitConverter.GetBytes(jumpTo));
             Buffer.Add(0x90);
             Buffer.Add(0x90);
-            Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _AddReloadSfx_Injection2.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);
-        
+            Win32API.WriteProcessMemory(ProcessHandle, (UInt32)_Process_MemoryBaseAddress + _AddReloadSfx_Injection2.Injection_Offset, Buffer.ToArray(), (UInt32)Buffer.Count, ref bytesWritten);        
         }
         
         //Replace old and ugly "FREEPLAY" displayed on lower screen during gameplay
